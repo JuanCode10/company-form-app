@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>Encuesta de Solicitud de Contacto</title>
+    </head>
+
+    <body>
+        <div>
+            <h1>Solicitud de Contacto</h1>
+
+            <p>
+                Si desea ser contactado por la empresa por favor facilitar la
+                información que se solicita a continuación.
+            </p>
+            <!-- TODO: add '*' on required fields, pending to define -->
+            <form>
+                <!-- Customer Information Section -->
+                <h2>Información de Contacto</h2>
+                <!-- Need to ask: name, email, number -->
+                <!-- For now both phone and email are required, adjust later. -->
+
+                <label for="customer-name">Nombre completo: </label>
+                <input
+                    type="text"
+                    id="customer-name"
+                    name="customer_name"
+                    required
+                    autocomplete="name"
+                />
+
+                <label for="customer-mail">Correo electrónico: </label>
+                <input
+                    type="email"
+                    id="customer-mail"
+                    name="customer_email"
+                    required
+                    autocomplete="email"
+                />
+
+                <label for="customer-phone">Número de teléfono: </label>
+                <input
+                    type="tel"
+                    id="customer-phone"
+                    name="customer_phone"
+                    required
+                    autocomplete="tel"
+                />
+
+                <h2>Muebles de su interés</h2>
+                <!-- Product interest section -->
+                <!-- TODO: retrieve available products from the backend -->
+                <fieldset>
+                    <legend>Qué tipo de muebles busca?</legend>
+
+                    <label>
+                        <input type="checkbox" name="products" value="bed" />
+                        Cama
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="products" value="table" />
+                        Comedor
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="products" value="sofa" />
+                        Sillón
+                    </label>
+                </fieldset>
+
+                <h2>Detalles de compra</h2>
+                <!-- Purchase information -->
+                <!-- This covers budget & time horizon -->
+                <label for="budget"
+                    >Presupuesto aproximado para compra (en colones):
+                </label>
+                <input
+                    type="number"
+                    id="budget"
+                    name="budget"
+                    min="0"
+                    step="1"
+                    required
+                />
+
+                <label for="purchase-time-horizon">
+                    ¿Cuándo planea realizar la compra?
+                </label>
+                <select
+                    id="purchase-time-horizon"
+                    name="purchase_time_horizon"
+                    required
+                >
+                    <option value="">Seleccione una opción</option>
+                    <option value="immediately">Lo antes posible</option>
+                    <option value="within_one_month">Dentro de un mes</option>
+                    <option value="within_three_months">
+                        Dentro de tres meses
+                    </option>
+                    <option value="within_six_months">
+                        Dentro de seis meses
+                    </option>
+                    <option value="more_than_six_months">
+                        Más de seis meses
+                    </option>
+                    <option value="undecided">No he decidido</option>
+                </select>
+
+                <h2>Sucursal de preferencia</h2>
+                <!-- TODO: retrieve available stores from the backend -->
+                <label for="store">
+                    Porfavor indique la sucursal cuya ubicación sea más
+                    conveniente:
+                </label>
+                <select id="store" name="store" required>
+                    <option value="">Seleccione una opción</option>
+                    <option value="la-mora">La Mora</option>
+                    <option value="san-sebastian">San Sebastián</option>
+                </select>
+
+                <!-- Additional comments section -->
+                <h2>Comentarios adicionales</h2>
+                <label for="customer-comments"> Comentarios adicionales </label>
+                <textarea
+                    id="customer-comments"
+                    name="customer_comments"
+                    rows="5"
+                    placeholder="Por favor indique cualquier detalle adicional de su consulta"
+                ></textarea>
+
+                <!-- Submit Button -->
+                <!-- TODO: add real functionality -->
+                <input type="submit" value="Enviar solicitud de contacto" />
+            </form>
+        </div>
+    </body>
+</html>
