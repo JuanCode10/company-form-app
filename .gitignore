@@ -1,2 +1,4 @@
 .envrc
 .venv
+instance
+__pycache__
