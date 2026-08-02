@@ -9,6 +9,7 @@ import models # todo: code db models
 
 # Import blueprints
 
+from resources.leads import blp as LeadBlueprint
 
 # Create app code
 
@@ -38,5 +39,6 @@ def create_app(db_url=None):
 
     # Register blueprints...
     #todo: code blueprints
+    api.register_blueprint(LeadBlueprint)
 
     return app
