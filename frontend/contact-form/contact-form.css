@@ -1,0 +1,113 @@
+/*
+SPACING SYSTEM (px)
+2 / 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 80 / 96 / 128
+
+FONT SIZE SYSTEM (px)
+10 / 12 / 14 / 16 / 18 / 20 / 24 / 30 / 36 / 44 / 52 / 62 / 74 / 86 / 98
+*/
+
+/*
+MAIN COLOR: #036cc2
+GREY COLOR: #343a40
+*/
+
+* {
+    /* This styling will apply to everything, set a base starting point */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* General Styles */
+
+body {
+    padding-top: 5%;
+
+    font-family: "Inter", sans-serif;
+    font-size: medium;
+    color: #343a40;
+}
+
+h1,
+h2 {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+p {
+    font-size: medium;
+}
+
+input:not([type="checkbox"]) {
+    padding: 8px;
+    border-radius: 4px;
+}
+
+select {
+    padding: 8px;
+    border-radius: 4px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 8px;
+
+    border-radius: 8px;
+    resize: vertical;
+}
+
+/* Page Layout */
+
+.container {
+    width: min(680px, calc(100% - 32px));
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Form Layout */
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    margin: 8px;
+}
+
+/* Product Options */
+
+.product-options {
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+.product-options legend {
+    margin-bottom: 12px;
+
+    font-size: medium;
+    font-weight: 400;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Submit Button */
+
+.submit-button {
+    display: block;
+    margin: 24px auto;
+}
