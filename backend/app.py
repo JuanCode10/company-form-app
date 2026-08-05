@@ -4,6 +4,9 @@ from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 
+# Import logging configuration
+from logging_config import configure_logging
+
 from db import db
 import models # todo: code db models
 
@@ -14,6 +17,8 @@ from resources.leads import blp as LeadBlueprint
 # Create app code
 
 def create_app(db_url=None):
+
+    configure_logging()
 
     app = Flask(__name__)
 
