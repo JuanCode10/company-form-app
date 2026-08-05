@@ -15,6 +15,12 @@ The initial API should follow these conventions:
 - Validation and server errors use a consistent response structure
 - Internal database details should not be exposed to clients
 
+## Application Structure
+
+The implementation should follow a services-based architecture in which the main business workflow logic is contained in service modules, while the endpoint blueprints are organized under the `backend/resources` directory.
+
+This separation keeps the API layer focused on request handling and delegation, while the services layer contains the core logic for each workflow.
+
 ## Client-Facing Store and Product Values
 
 The public frontend should not need to know the internal database UUIDs assigned to stores and products.
@@ -27,8 +33,8 @@ For example:
 
 ```javascript
 const stores = {
-  "San José": "san-jose",
-  Heredia: "heredia",
+    "San José": "san-jose",
+    Heredia: "heredia",
 };
 ```
 
@@ -38,8 +44,8 @@ The first implementation may submit the displayed names directly:
 
 ```json
 {
-  "store": "San José",
-  "products": ["Bed", "Nightstand"]
+    "store": "San José",
+    "products": ["Bed", "Nightstand"]
 }
 ```
 
@@ -47,8 +53,8 @@ A future implementation may instead submit stable codes:
 
 ```json
 {
-  "store": "san-jose",
-  "products": ["bed", "nightstand"]
+    "store": "san-jose",
+    "products": ["bed", "nightstand"]
 }
 ```
 
@@ -109,16 +115,16 @@ The frontend sends customer information and lead information together in one req
 
 ```json
 {
-  "customer": {
-    "name": "Example Customer",
-    "email": "customer@example.com",
-    "phone_number": "88888888"
-  },
-  "store": "San José",
-  "products": ["Bed", "Nightstand"],
-  "budget": 500000,
-  "purchase_time_horizon": "within_one_month",
-  "customer_comments": "I am looking for a queen-size bed."
+    "customer": {
+        "name": "Example Customer",
+        "email": "customer@example.com",
+        "phone_number": "88888888"
+    },
+    "store": "San José",
+    "products": ["Bed", "Nightstand"],
+    "budget": 500000,
+    "purchase_time_horizon": "within_one_month",
+    "customer_comments": "I am looking for a queen-size bed."
 }
 ```
 
@@ -176,12 +182,12 @@ Response body:
 
 ```json
 {
-  "message": "Lead created successfully.",
-  "lead": {
-    "id": "a1886b1d-80ad-4700-909a-da4ffdbe4050",
-    "status": "new",
-    "created_at": "2026-07-24T19:30:00-06:00"
-  }
+    "message": "Lead created successfully.",
+    "lead": {
+        "id": "a1886b1d-80ad-4700-909a-da4ffdbe4050",
+        "status": "new",
+        "created_at": "2026-07-24T19:30:00-06:00"
+    }
 }
 ```
 
@@ -213,16 +219,16 @@ Response body:
 
 ```json
 {
-  "stores": [
-    {
-      "value": "San José",
-      "label": "San José"
-    },
-    {
-      "value": "Heredia",
-      "label": "Heredia"
-    }
-  ]
+    "stores": [
+        {
+            "value": "San José",
+            "label": "San José"
+        },
+        {
+            "value": "Heredia",
+            "label": "Heredia"
+        }
+    ]
 }
 ```
 
@@ -234,8 +240,8 @@ A future version may use a stable code as the value:
 
 ```json
 {
-  "value": "san-jose",
-  "label": "San José"
+    "value": "san-jose",
+    "label": "San José"
 }
 ```
 
@@ -265,18 +271,18 @@ Response body:
 
 ```json
 {
-  "products": [
-    {
-      "value": "Bed",
-      "label": "Bed",
-      "description": "Beds and related bedroom furniture"
-    },
-    {
-      "value": "Nightstand",
-      "label": "Nightstand",
-      "description": "Nightstands and related bedroom furniture"
-    }
-  ]
+    "products": [
+        {
+            "value": "Bed",
+            "label": "Bed",
+            "description": "Beds and related bedroom furniture"
+        },
+        {
+            "value": "Nightstand",
+            "label": "Nightstand",
+            "description": "Nightstands and related bedroom furniture"
+        }
+    ]
 }
 ```
 
@@ -286,9 +292,9 @@ A future version may use stable codes:
 
 ```json
 {
-  "value": "bed",
-  "label": "Bed",
-  "description": "Beds and related bedroom furniture"
+    "value": "bed",
+    "label": "Bed",
+    "description": "Beds and related bedroom furniture"
 }
 ```
 

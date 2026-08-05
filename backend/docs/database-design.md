@@ -11,13 +11,27 @@ The first implementation checkpoint will focus only on:
 
 Authentication, store dashboards, sales representative assignments, WhatsApp integration, automatic prioritization, and lead resolution workflows will be considered future milestones.
 
+## Database Environment Strategy
+
+The project will use different database engines depending on the environment:
+
+1. Local development: SQLite
+2. Remote/staging/production: MariaDB
+
+Primary key IDs will not be generated as UUIDs by the application layer. Instead, each database engine will manage ID generation automatically using its native auto-increment behavior.
+
+Design implication:
+
+- Treat `id` fields as database-managed numeric primary keys.
+- Keep foreign keys as matching numeric references to their related primary keys.
+
 ## Candidate Entities
 
 ### Customer
 
 | Field          | Description                                                         |
 | -------------- | ------------------------------------------------------------------- |
-| `id`           | Unique customer identifier using a UUID                             |
+| `id`           | Database-managed unique customer identifier (auto-increment)        |
 | `name`         | Customer's full name                                                |
 | `phone_number` | Customer's phone number                                             |
 | `email`        | Customer's email address                                            |
@@ -38,7 +52,7 @@ Authentication, store dashboards, sales representative assignments, WhatsApp int
 
 | Field                        | Description                                                                             |
 | ---------------------------- | --------------------------------------------------------------------------------------- |
-| `id`                         | Unique lead identifier using a UUID                                                     |
+| `id`                         | Database-managed unique lead identifier (auto-increment)                                |
 | `customer_id`                | Reference to the customer who submitted the lead                                        |
 | `store_id`                   | Reference to the store selected by the customer                                         |
 | `sales_representative_id`    | Reference to the assigned sales representative; nullable until assignment               |
@@ -82,7 +96,7 @@ Authentication, store dashboards, sales representative assignments, WhatsApp int
 
 | Field        | Description                                                      |
 | ------------ | ---------------------------------------------------------------- |
-| `id`         | Unique store identifier using a UUID                             |
+| `id`         | Database-managed unique store identifier (auto-increment)        |
 | `name`       | Store name                                                       |
 | `location`   | Store location or address                                        |
 | `created_at` | Timestamp indicating when the store was registered               |
@@ -108,7 +122,7 @@ Authentication, store dashboards, sales representative assignments, WhatsApp int
 
 | Field          | Description                                                                     |
 | -------------- | ------------------------------------------------------------------------------- |
-| `id`           | Unique sales representative identifier using a UUID                             |
+| `id`           | Database-managed unique sales representative identifier (auto-increment)        |
 | `store_id`     | Reference to the store where the sales representative works                     |
 | `name`         | Sales representative's full name                                                |
 | `email`        | Sales representative's email address                                            |
@@ -135,7 +149,7 @@ Authentication, store dashboards, sales representative assignments, WhatsApp int
 
 | Field         | Description                                                                  |
 | ------------- | ---------------------------------------------------------------------------- |
-| `id`          | Unique product identifier using a UUID                                       |
+| `id`          | Database-managed unique product identifier (auto-increment)                  |
 | `name`        | General product name or category, such as `bed`, `table`, `chair`, or `sofa` |
 | `description` | Optional description of the product category                                 |
 | `is_active`   | Indicates whether the product can currently be selected in the customer form |
@@ -203,7 +217,7 @@ erDiagram
     PRODUCT ||--o{ LEAD_PRODUCT : selected_in
 
     CUSTOMER {
-        uuid id PK
+        int id PK
         string name
         string phone_number
         string email
@@ -212,10 +226,10 @@ erDiagram
     }
 
     LEAD {
-        uuid id PK
-        uuid customer_id FK
-        uuid store_id FK
-        uuid sales_representative_id FK
+        int id PK
+        int customer_id FK
+        int store_id FK
+        int sales_representative_id FK
         decimal budget
         string purchase_time_horizon
         string customer_comments
@@ -228,7 +242,7 @@ erDiagram
     }
 
     STORE {
-        uuid id PK
+        int id PK
         string name
         string location
         datetime created_at
@@ -236,8 +250,8 @@ erDiagram
     }
 
     SALES_REPRESENTATIVE {
-        uuid id PK
-        uuid store_id FK
+        int id PK
+        int store_id FK
         string name
         string email
         string phone_number
@@ -246,7 +260,7 @@ erDiagram
     }
 
     PRODUCT {
-        uuid id PK
+        int id PK
         string name
         string description
         boolean is_active
@@ -255,7 +269,7 @@ erDiagram
     }
 
     LEAD_PRODUCT {
-        uuid lead_id PK, FK
-        uuid product_id PK, FK
+        int lead_id PK, FK
+        int product_id PK, FK
     }
 ```

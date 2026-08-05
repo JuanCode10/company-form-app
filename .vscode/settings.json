@@ -1,5 +1,9 @@
 {
     "prettier.tabWidth": 4,
     "prettier.useTabs": false,
-    "liveServer.settings.useLocalIp": true
+    "liveServer.settings.useLocalIp": true,
+    "python.testing.cwd": "${workspaceFolder}/backend",
+    "python.testing.pytestArgs": ["."],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
