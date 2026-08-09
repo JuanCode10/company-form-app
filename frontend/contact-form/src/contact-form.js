@@ -1,13 +1,10 @@
 "use strict";
 
-// --- Functions ---
-// todo: improve validation logic for processBudget
-
-function processName(customerName) {
+export function processName(customerName) {
     return customerName.trim();
 }
 
-function processEmail(customerEmail) {
+export function processEmail(customerEmail) {
     const email = customerEmail.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,7 +16,7 @@ function processEmail(customerEmail) {
     return null;
 }
 
-function processPhone(customerPhone) {
+export function processPhone(customerPhone) {
     const phone = customerPhone.replaceAll(" ", "");
     const phoneRegex = /^\d{8}$/;
 
@@ -31,13 +28,13 @@ function processPhone(customerPhone) {
     return null;
 }
 
-function getSelectedProducts(formElement) {
+export function getSelectedProducts(formElement) {
     return Array.from(
         formElement.querySelectorAll('input[name="products"]:checked'),
     ).map((input) => input.value);
 }
 
-function processBudget(customerBudget) {
+export function processBudget(customerBudget) {
     const budget = Number(customerBudget);
     if (budget > 0) {
         return budget;
@@ -47,7 +44,7 @@ function processBudget(customerBudget) {
     return null;
 }
 
-function buildPayload(formElement) {
+export function buildPayload(formElement) {
     const payload = {
         customer: {
             name: processName(formElement.customerName.value),
@@ -65,21 +62,13 @@ function buildPayload(formElement) {
     return payload;
 }
 
-function sendPayload(payload) {
+export function sendPayload(payload) {
     // todo: implement when API is ready
 }
 
-function submissionHandler(event) {
+export function submissionHandler(event) {
     event.preventDefault();
     const payload = buildPayload(event.currentTarget);
     sendPayload(payload);
     return payload;
 }
-
-// --- Event listener ---
-
-const form = document.querySelector("form");
-if (!form) {
-    throw new Error("Form not found!");
-}
-form.addEventListener("submit", submissionHandler);
