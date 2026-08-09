@@ -20,7 +20,7 @@ jobs:
 
             - name: Run Backend Unit Tests
               working-directory: ./backend
-              run: pytest .
+              run: python -m pytest .
 
     frontend-test:
         runs-on: ubuntu-latest
