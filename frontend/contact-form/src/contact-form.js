@@ -1,4 +1,7 @@
 export function processName(customerName) {
+    if ("string" !== typeof customerName) {
+        throw new Error("Invalid input - must be of type 'string'.");
+    }
     return customerName.trim();
 }
 
