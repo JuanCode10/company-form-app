@@ -1,11 +1,21 @@
 export function processName(customerName) {
-    if ("string" !== typeof customerName) {
+    if (typeof customerName !== "string") {
         throw new Error("Invalid input - must be of type 'string'.");
     }
-    return customerName.trim();
+
+    const name = customerName.trim();
+    if (!name) {
+        throw new Error("Invalid name provided");
+    }
+
+    return name;
 }
 
 export function processEmail(customerEmail) {
+    if (typeof customerEmail !== "string") {
+        throw new Error("Invalid input - must be of type 'string'.");
+    }
+
     const email = customerEmail.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -14,11 +24,14 @@ export function processEmail(customerEmail) {
     }
 
     throw new Error("Invalid email provided");
-    return null;
 }
 
 export function processPhone(customerPhone) {
-    const phone = customerPhone.replaceAll(" ", "");
+    if (typeof customerPhone !== "string") {
+        throw new Error("Invalid input - must be of type 'string'.");
+    }
+
+    const phone = customerPhone.replace(/\D/g, "");
     const phoneRegex = /^\d{8}$/;
 
     if (phoneRegex.test(phone)) {
@@ -26,10 +39,13 @@ export function processPhone(customerPhone) {
     }
 
     throw new Error("Invalid phone detected.");
-    return null;
 }
 
 export function getSelectedProducts(formElement) {
+    if (!formElement || typeof formElement.querySelectorAll !== "function") {
+        throw new Error("Invalid form element provided");
+    }
+
     return Array.from(
         formElement.querySelectorAll('input[name="products"]:checked'),
     ).map((input) => input.value);
@@ -37,15 +53,19 @@ export function getSelectedProducts(formElement) {
 
 export function processBudget(customerBudget) {
     const budget = Number(customerBudget);
-    if (budget > 0) {
+
+    if (Number.isFinite(budget) && budget > 0) {
         return budget;
     }
 
     throw new Error("Invalid budget detected.");
-    return null;
 }
 
 export function buildPayload(formElement) {
+    if (!formElement) {
+        throw new Error("Invalid form element provided");
+    }
+
     const payload = {
         customer: {
             name: processName(formElement.customerName.value),
@@ -59,16 +79,29 @@ export function buildPayload(formElement) {
         customer_comments: formElement.customerComments.value,
     };
 
-    console.log(payload);
     return payload;
 }
 
 export function sendPayload(payload) {
-    // todo: implement when API is ready
+    if (!payload || typeof payload !== "object") {
+        throw new Error("Invalid payload provided");
+    }
+
+    // TODO: implement when API is ready.
+    return payload;
 }
 
 export function submissionHandler(event) {
+    if (!event || typeof event.preventDefault !== "function") {
+        throw new Error("Invalid submit event provided");
+    }
+
     event.preventDefault();
+
+    if (!event.currentTarget) {
+        throw new Error("Missing event target");
+    }
+
     const payload = buildPayload(event.currentTarget);
     sendPayload(payload);
     return payload;
