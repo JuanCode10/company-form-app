@@ -1,5 +1,3 @@
-"use strict";
-
 import { submissionHandler } from "./contact-form.js";
 
 // --- Event listener ---

@@ -1,5 +1,3 @@
-"use strict";
-
 export function processName(customerName) {
     return customerName.trim();
 }
