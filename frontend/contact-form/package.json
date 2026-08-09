@@ -1,0 +1,20 @@
+{
+    "name": "company-contact-form",
+    "version": "1.0.0",
+    "description": "Company contact form frontend.",
+    "main": "contact-form.js",
+    "type": "module",
+    "scripts": {
+        "test": "vitest --run --environment jsdom --reporter verbose",
+        "test:watch": "vitest --environment jsdom",
+        "start": "http-server -c-1"
+    },
+    "keywords": [],
+    "author": "Juan Cerdas",
+    "license": "ISC",
+    "devDependencies": {
+        "http-server": "^14.1.0",
+        "install": "^0.13.0",
+        "vitest": "^4.1.10"
+    }
+}
