@@ -1,4 +1,14 @@
-## API Conventions
+## Implementation Status
+
+The current Flask application registers one public endpoint:
+
+| Method | Endpoint | Current behavior                                                                                                                                                 |
+| ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/leads` | Validates the form payload, creates or reuses a customer by normalized phone number, and returns `200 OK` with `{"status": 200, "message": "Payload received"}`. |
+
+The route is currently `/leads`, not `/api/v1/leads`. The service does not yet create a lead or resolve and persist store and product values. `GET /stores`, `GET /products`, and `/health` are not implemented.
+
+## Target API Conventions
 
 The initial API should follow these conventions:
 
@@ -88,7 +98,7 @@ A public customer submission represents one complete lead-generation action.
 
 The frontend should not need to create customers, leads, or database relationships through separate requests.
 
-## Initial Endpoints
+## Planned Endpoints
 
 | Method | Endpoint           | Purpose                                 | Authentication |
 | ------ | ------------------ | --------------------------------------- | -------------- |
@@ -106,6 +116,8 @@ The endpoint list may expand in future milestones.
 ```text
 POST /api/v1/leads
 ```
+
+This is the target route for a future version. The currently registered route is `POST /leads`.
 
 This endpoint represents the complete customer form submission.
 
@@ -170,7 +182,7 @@ Customer creation, lead creation, and product association should be completed as
 
 If any required database operation fails, the transaction should be rolled back so that incomplete customer or lead records are not retained.
 
-### Successful Response
+### Target Successful Response
 
 Status:
 
@@ -300,7 +312,20 @@ A future version may use stable codes:
 
 Only active products should be returned.
 
-## Data Validation
+## Current Validation
+
+`FormPayloadSchema` currently requires all of the following fields:
+
+- `customer.name`, `customer.email`, and `customer.phone_number`
+- `store`, restricted to `la-mora` or `san-sebastian`
+- `products` as a list of strings
+- `budget` as an integer
+- `purchase_time_horizon`, restricted to the configured choices
+- `customer_comments` as a string
+
+Phone numbers are normalized by the customer service to the `+506 1234-5678` format. Customer identity is currently determined by the normalized phone number; email is stored but is not unique.
+
+## Target Validation
 
 Input validation will be implemented using Marshmallow schemas.
 

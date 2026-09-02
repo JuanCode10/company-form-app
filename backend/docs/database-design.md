@@ -1,6 +1,14 @@
 # Database Design
 
-## Initial Implementation Scope
+## Current Implementation Status
+
+The application is configured to use `sqlite:///data.db` when `DATABASE_URL` is not set. On startup, it runs `db.create_all()`.
+
+Only the `customers` table is currently modeled and used. It has an integer primary key, required name and phone number, optional email, timestamps, and a uniqueness constraint on `phone_number`. The customer service normalizes the phone number, returns an existing customer when it finds the same number, or persists a new customer.
+
+`Lead`, `Store`, `Product`, `SalesRepresentative`, and `LeadProduct` remain target entities. No models, migrations, seed data, or persistence workflow exist for them yet. The next SQLite milestone should implement the lead-related subset needed for a complete submission before the employee-management entities.
+
+## Target Database Design
 
 The first implementation checkpoint will focus only on:
 
@@ -15,7 +23,7 @@ Authentication, store dashboards, sales representative assignments, WhatsApp int
 
 The project will use different database engines depending on the environment:
 
-1. Local development: SQLite
+1. Local development: SQLite (configured now; lead storage remains to be implemented)
 2. Remote/staging/production: MariaDB
 
 Primary key IDs will not be generated as UUIDs by the application layer. Instead, each database engine will manage ID generation automatically using its native auto-increment behavior.
