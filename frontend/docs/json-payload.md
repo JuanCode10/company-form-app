@@ -1,4 +1,10 @@
-# Initial Client-Side JSON Payload Design
+# Client-Side JSON Payload Design
+
+## Implementation Status
+
+`buildPayload` currently constructs this payload from the form and validates or normalizes the customer fields before doing so. In particular, it converts the budget to a number and formats eight-digit Costa Rican phone numbers as `+506 1234-5678`.
+
+`sendPayload` currently validates that it received an object and returns it unchanged. The frontend does not yet serialize the object or send it to the backend. The round-trip milestone will implement the documented Fetch request and handle the API response.
 
 ## Purpose
 
@@ -9,7 +15,7 @@ The payload represents one complete customer lead submission.
 The frontend will gather information from the HTML form, convert it into a JavaScript object, serialize it as JSON, and send it to:
 
 ```text
-POST /api/v1/leads
+POST /leads
 ```
 
 The payload should contain business-level information required by the backend without exposing database implementation details.
@@ -31,16 +37,16 @@ The initial payload should follow these principles:
 
 ```json
 {
-  "customer": {
-    "name": "Example Customer",
-    "email": "customer@example.com",
-    "phone_number": "88888888"
-  },
-  "store": "San José",
-  "products": ["Bed", "Nightstand"],
-  "budget": 500000,
-  "purchase_time_horizon": "within_one_month",
-  "customer_comments": "I am looking for a queen-size bed."
+    "customer": {
+        "name": "Example Customer",
+        "email": "customer@example.com",
+        "phone_number": "88888888"
+    },
+    "store": "San José",
+    "products": ["Bed", "Nightstand"],
+    "budget": 500000,
+    "purchase_time_horizon": "within_one_month",
+    "customer_comments": "I am looking for a queen-size bed."
 }
 ```
 
@@ -70,11 +76,11 @@ Example:
 
 ```json
 {
-  "customer": {
-    "name": "Example Customer",
-    "email": "customer@example.com",
-    "phone_number": "88888888"
-  }
+    "customer": {
+        "name": "Example Customer",
+        "email": "customer@example.com",
+        "phone_number": "88888888"
+    }
 }
 ```
 
@@ -94,7 +100,7 @@ Initial example:
 
 ```json
 {
-  "store": "San José"
+    "store": "San José"
 }
 ```
 
@@ -106,7 +112,7 @@ The initial version may submit a readable store name:
 
 ```json
 {
-  "store": "San José"
+    "store": "San José"
 }
 ```
 
@@ -114,7 +120,7 @@ A future version may submit a stable code:
 
 ```json
 {
-  "store": "san-jose"
+    "store": "san-jose"
 }
 ```
 
@@ -124,12 +130,12 @@ Example response:
 
 ```json
 {
-  "stores": [
-    {
-      "value": "San José",
-      "label": "San José"
-    }
-  ]
+    "stores": [
+        {
+            "value": "San José",
+            "label": "San José"
+        }
+    ]
 }
 ```
 
@@ -147,7 +153,7 @@ Example:
 
 ```json
 {
-  "products": ["Bed", "Nightstand"]
+    "products": ["Bed", "Nightstand"]
 }
 ```
 
@@ -157,7 +163,7 @@ Example with one product:
 
 ```json
 {
-  "products": ["Bed"]
+    "products": ["Bed"]
 }
 ```
 
@@ -169,7 +175,7 @@ A future implementation may submit stable codes:
 
 ```json
 {
-  "products": ["bed", "nightstand"]
+    "products": ["bed", "nightstand"]
 }
 ```
 
@@ -179,13 +185,13 @@ Example:
 
 ```json
 {
-  "products": [
-    {
-      "value": "Bed",
-      "label": "Bed",
-      "description": "Beds and related bedroom furniture"
-    }
-  ]
+    "products": [
+        {
+            "value": "Bed",
+            "label": "Bed",
+            "description": "Beds and related bedroom furniture"
+        }
+    ]
 }
 ```
 
@@ -199,7 +205,7 @@ Correct:
 
 ```json
 {
-  "budget": 500000
+    "budget": 500000
 }
 ```
 
@@ -207,7 +213,7 @@ Avoid:
 
 ```json
 {
-  "budget": "₡500,000"
+    "budget": "₡500,000"
 }
 ```
 
@@ -225,7 +231,7 @@ Example:
 
 ```json
 {
-  "purchase_time_horizon": "within_one_month"
+    "purchase_time_horizon": "within_one_month"
 }
 ```
 
@@ -262,7 +268,7 @@ Example:
 
 ```json
 {
-  "customer_comments": "I am looking for a queen-size bed."
+    "customer_comments": "I am looking for a queen-size bed."
 }
 ```
 
@@ -300,9 +306,9 @@ For example, the frontend should not send:
 
 ```json
 {
-  "status": "new",
-  "priority": "high",
-  "sales_representative_id": "example-id"
+    "status": "new",
+    "priority": "high",
+    "sales_representative_id": "example-id"
 }
 ```
 
@@ -331,20 +337,23 @@ A possible initial implementation is:
 
 ```javascript
 const selectedProducts = Array.from(
-  document.querySelectorAll('input[name="products"]:checked'),
+    document.querySelectorAll('input[name="products"]:checked'),
 ).map((input) => input.value);
 
 const payload = {
-  customer: {
-    name: document.querySelector("#customer-name").value.trim(),
-    email: document.querySelector("#customer-email").value.trim(),
-    phone_number: document.querySelector("#customer-phone").value.trim(),
-  },
-  store: document.querySelector("#store").value,
-  products: selectedProducts,
-  budget: Number(document.querySelector("#budget").value),
-  purchase_time_horizon: document.querySelector("#purchase-time-horizon").value,
-  customer_comments: document.querySelector("#customer-comments").value.trim(),
+    customer: {
+        name: document.querySelector("#customer-name").value.trim(),
+        email: document.querySelector("#customer-email").value.trim(),
+        phone_number: document.querySelector("#customer-phone").value.trim(),
+    },
+    store: document.querySelector("#store").value,
+    products: selectedProducts,
+    budget: Number(document.querySelector("#budget").value),
+    purchase_time_horizon: document.querySelector("#purchase-time-horizon")
+        .value,
+    customer_comments: document
+        .querySelector("#customer-comments")
+        .value.trim(),
 };
 
 console.log(payload);
@@ -370,19 +379,19 @@ const requestBody = JSON.stringify(payload);
 
 The frontend should not manually build JSON using string concatenation.
 
-## API Request
+## Planned API Request
 
 The initial request may be sent using the browser Fetch API.
 
 Example:
 
 ```javascript
-const response = await fetch("/api/v1/leads", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify(payload),
+const response = await fetch("/leads", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
 });
 ```
 
@@ -397,7 +406,7 @@ Backend:  http://localhost:5000
 
 In that case, the request URL and cross-origin configuration will need to be handled during implementation.
 
-The final deployment arrangement has not yet been defined.
+The current Flask route is `/leads`. Moving it to the target `/api/v1/leads` prefix requires a coordinated backend and frontend change.
 
 ## Client-Side Validation Before Submission
 
@@ -443,12 +452,12 @@ A successful lead submission is expected to return:
 
 ```json
 {
-  "message": "Lead created successfully.",
-  "lead": {
-    "id": "a1886b1d-80ad-4700-909a-da4ffdbe4050",
-    "status": "new",
-    "created_at": "2026-07-24T19:30:00-06:00"
-  }
+    "message": "Lead created successfully.",
+    "lead": {
+        "id": "a1886b1d-80ad-4700-909a-da4ffdbe4050",
+        "status": "new",
+        "created_at": "2026-07-24T19:30:00-06:00"
+    }
 }
 ```
 
@@ -467,11 +476,11 @@ A validation error may return:
 
 ```json
 {
-  "code": "validation_error",
-  "message": "The submitted information is invalid.",
-  "errors": {
-    "customer.email": ["Not a valid email address."]
-  }
+    "code": "validation_error",
+    "message": "The submitted information is invalid.",
+    "errors": {
+        "customer.email": ["Not a valid email address."]
+    }
 }
 ```
 
@@ -490,7 +499,7 @@ Example:
 const responseData = await response.json();
 
 if (!response.ok) {
-  throw new Error(responseData.message || "The form could not be submitted.");
+    throw new Error(responseData.message || "The form could not be submitted.");
 }
 ```
 
@@ -502,16 +511,16 @@ A minimal valid payload may look like:
 
 ```json
 {
-  "customer": {
-    "name": "Example Customer",
-    "email": "",
-    "phone_number": "88888888"
-  },
-  "store": "Heredia",
-  "products": ["Sofa"],
-  "budget": 350000,
-  "purchase_time_horizon": "within_three_months",
-  "customer_comments": ""
+    "customer": {
+        "name": "Example Customer",
+        "email": "",
+        "phone_number": "88888888"
+    },
+    "store": "Heredia",
+    "products": ["Sofa"],
+    "budget": 350000,
+    "purchase_time_horizon": "within_three_months",
+    "customer_comments": ""
 }
 ```
 

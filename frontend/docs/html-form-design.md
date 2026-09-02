@@ -1,4 +1,10 @@
-# Initial HTML Form Design
+# Contact Form Design
+
+## Implementation Status
+
+The HTML form is implemented at `frontend/contact-form/index.html` and is currently rendered in Spanish. It contains required inputs for name, email, phone, budget, purchase horizon, and store; optional comments; and checkbox product choices for bed, table, and sofa.
+
+The form's module submit handler prevents the browser default, builds a validated payload, and calls `sendPayload`. It does not yet make an HTTP request or display submission status. Store and product options are currently static rather than loaded from the backend.
 
 ## Purpose
 
@@ -70,32 +76,32 @@ Example HTML structure:
 
 ```html
 <section>
-  <h2>Contact Information</h2>
+    <h2>Contact Information</h2>
 
-  <label for="customer-name">Full name</label>
-  <input
-    type="text"
-    id="customer-name"
-    name="customer_name"
-    autocomplete="name"
-    required
-  />
+    <label for="customer-name">Full name</label>
+    <input
+        type="text"
+        id="customer-name"
+        name="customer_name"
+        autocomplete="name"
+        required
+    />
 
-  <label for="customer-email">Email address</label>
-  <input
-    type="email"
-    id="customer-email"
-    name="customer_email"
-    autocomplete="email"
-  />
+    <label for="customer-email">Email address</label>
+    <input
+        type="email"
+        id="customer-email"
+        name="customer_email"
+        autocomplete="email"
+    />
 
-  <label for="customer-phone">Phone number</label>
-  <input
-    type="tel"
-    id="customer-phone"
-    name="customer_phone"
-    autocomplete="tel"
-  />
+    <label for="customer-phone">Phone number</label>
+    <input
+        type="tel"
+        id="customer-phone"
+        name="customer_phone"
+        autocomplete="tel"
+    />
 </section>
 ```
 
@@ -126,22 +132,22 @@ Example:
 
 ```html
 <fieldset>
-  <legend>Which products are you interested in?</legend>
+    <legend>Which products are you interested in?</legend>
 
-  <label>
-    <input type="checkbox" name="products" value="Bed" />
-    Bed
-  </label>
+    <label>
+        <input type="checkbox" name="products" value="Bed" />
+        Bed
+    </label>
 
-  <label>
-    <input type="checkbox" name="products" value="Table" />
-    Table
-  </label>
+    <label>
+        <input type="checkbox" name="products" value="Table" />
+        Table
+    </label>
 
-  <label>
-    <input type="checkbox" name="products" value="Sofa" />
-    Sofa
-  </label>
+    <label>
+        <input type="checkbox" name="products" value="Sofa" />
+        Sofa
+    </label>
 </fieldset>
 ```
 
@@ -157,8 +163,8 @@ For the initial implementation, these values may be identical:
 
 ```json
 {
-  "value": "Bed",
-  "label": "Bed"
+    "value": "Bed",
+    "label": "Bed"
 }
 ```
 
@@ -166,8 +172,8 @@ A future version may use a stable code:
 
 ```json
 {
-  "value": "bed",
-  "label": "Bed"
+    "value": "bed",
+    "label": "Bed"
 }
 ```
 
@@ -219,17 +225,17 @@ Example:
 
 ```html
 <label for="purchase-time-horizon">
-  When are you planning to make the purchase?
+    When are you planning to make the purchase?
 </label>
 
 <select id="purchase-time-horizon" name="purchase_time_horizon" required>
-  <option value="">Select an option</option>
-  <option value="immediately">As soon as possible</option>
-  <option value="within_one_month">Within one month</option>
-  <option value="within_three_months">Within three months</option>
-  <option value="within_six_months">Within six months</option>
-  <option value="more_than_six_months">More than six months</option>
-  <option value="undecided">I am not sure yet</option>
+    <option value="">Select an option</option>
+    <option value="immediately">As soon as possible</option>
+    <option value="within_one_month">Within one month</option>
+    <option value="within_three_months">Within three months</option>
+    <option value="within_six_months">Within six months</option>
+    <option value="more_than_six_months">More than six months</option>
+    <option value="undecided">I am not sure yet</option>
 </select>
 ```
 
@@ -252,7 +258,7 @@ Example initial structure:
 <label for="store">Preferred store</label>
 
 <select id="store" name="store" required>
-  <option value="">Select a store</option>
+    <option value="">Select a store</option>
 </select>
 ```
 
@@ -262,16 +268,16 @@ Example backend response:
 
 ```json
 {
-  "stores": [
-    {
-      "value": "San José",
-      "label": "San José"
-    },
-    {
-      "value": "Heredia",
-      "label": "Heredia"
-    }
-  ]
+    "stores": [
+        {
+            "value": "San José",
+            "label": "San José"
+        },
+        {
+            "value": "Heredia",
+            "label": "Heredia"
+        }
+    ]
 }
 ```
 
@@ -298,10 +304,10 @@ Example:
 <label for="customer-comments"> Additional comments or requests </label>
 
 <textarea
-  id="customer-comments"
-  name="customer_comments"
-  rows="5"
-  placeholder="Tell us anything else that may help us understand what you need."
+    id="customer-comments"
+    name="customer_comments"
+    rows="5"
+    placeholder="Tell us anything else that may help us understand what you need."
 ></textarea>
 ```
 

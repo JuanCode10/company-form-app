@@ -20,12 +20,27 @@ Once the client reaches this stage, a sales representative must manually gather 
 - Available budget
 - Additional comments, specific requests, or relevant information
 
-## Current Problems
+## Current Implementation
 
-- Leads are not initially qualified, and there are no structured questions to distinguish serious potential customers from low-intent or incomplete requests.
-- There is no client priority or classification system, making it difficult to identify and prioritize higher-quality leads.
-- Client information is not retained in a centralized database, making it difficult to communicate promotions, product information, or future sales opportunities directly to previous leads.
-- Potential customers may fail to convert because sales representatives must process excessive lead noise without a clear prioritization system.
+The repository now contains an initial working form and backend intake slice:
+
+- The Spanish-language contact form captures customer details, products, budget, purchase horizon, store, and comments.
+- Client-side JavaScript trims and validates names and emails, normalizes Costa Rican phone numbers, collects selected products, and builds the documented JSON payload.
+- The Flask application exposes `POST /leads`; its Marshmallow schema validates the payload structure and supported store and purchase-horizon values.
+- Customer records use the submitted phone number as their unique key. The customer service normalizes the phone number and returns an existing customer for repeat submissions.
+- SQLAlchemy is configured with SQLite by default (`sqlite:///data.db`), and the current `CustomerModel` is created when the application starts.
+
+The form does not yet send a network request: `sendPayload` currently returns the validated payload. The backend currently creates or reuses the customer only; lead, store, and product persistence are not implemented.
+
+## Future Objectives
+
+The following objectives address the remaining intake and lead-management needs in later milestones:
+
+- Complete the form submission round trip so customers receive an accurate success or error result from the API.
+- Persist complete lead submissions in a local SQLite database, including the selected store and products.
+- Introduce lead classification and prioritization after the stored lead workflow is established.
+- Build authenticated store and sales-representative workflows for assignment, follow-up, and lead resolution.
+- Retain completed customer and lead history to support future communication and service.
 
 ## Desired Process
 
@@ -34,19 +49,19 @@ Once the client reaches this stage, a sales representative must manually gather 
 Customers complete a form containing relevant qualification questions, including:
 
 1. General item of interest, such as:
-   - Bed
-   - Table
-   - Chairs
-   - Sofa
-   - Other
+    - Bed
+    - Table
+    - Chairs
+    - Sofa
+    - Other
 
 2. Estimated purchase budget
 3. Estimated time horizon for completing the purchase
 4. Preferred store location, selected from a dropdown menu
 5. Personal and contact information:
-   - Name
-   - Email address
-   - Phone number
+    - Name
+    - Email address
+    - Phone number
 
 6. Additional comments, specific requests, or questions
 
@@ -87,15 +102,33 @@ The interface should:
 3. Include a contact action that opens WhatsApp Web with a prepared message containing relevant customer information
 4. Allow the sales representative to update the lead's status
 5. Allow the sales representative to close the lead by recording:
-   - Final resolution
-   - Outcome of the interaction
-   - Additional comments
+    - Final resolution
+    - Outcome of the interaction
+    - Additional comments
 
 6. Attach the recorded outcome and comments to the customer's history to support future contact, more personalized service, and better customer interactions
 
-## Initial Milestone
+## Completed Milestone: Form Intake Foundation
 
-The scope of the initial milestone includes:
+The initial implementation established the form, payload construction, backend schema, customer service, and an initial SQLite-backed customer model.
+
+## Next Milestone: Form Submission Round Trip
+
+- Implement `sendPayload` with `fetch` and submit the JSON payload to `POST /leads`.
+- Return a meaningful API response for accepted submissions and validation failures.
+- Add form submission states for submitting, successful, and failed requests.
+- Align the frontend request URL with the backend route and configure local cross-origin behavior if the applications use different origins.
+
+## Following Milestone: Local SQLite Lead Storage
+
+- Implement SQLite models and persistence for leads, stores, products, and lead-product associations.
+- Resolve the submitted store and product values against locally seeded records.
+- Create the complete lead submission in a transaction, associated with its customer.
+- Replace the fixed acknowledgement with a response containing the persisted lead's public identifier and initial status.
+
+## Initial Milestone Reference
+
+The original milestone scope was:
 
 ### Backend
 
@@ -106,10 +139,6 @@ The scope of the initial milestone includes:
 
 - Design the HTML form
 - Define and document the client-side JSON payload
-
-### CI/CD
-
-Not applicable for this milestone. The initial milestone focuses on system design and documentation.
 
 ## Backend Documentation
 
