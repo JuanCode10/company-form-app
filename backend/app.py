@@ -3,6 +3,7 @@ import os
 from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 
 # Import logging configuration
 from logging_config import configure_logging
@@ -21,6 +22,10 @@ def create_app(db_url=None):
     configure_logging()
 
     app = Flask(__name__)
+
+    # Allow requests from other origins
+    # TODO: udpate so it only allows specific urls on deployment
+    CORS(app, resources={r"/leads": {"origins": "*"}})
 
     # App general config
     app.config["PROPAGATE_EXCEPTIONS"] = True # if exception occurs, propagate to main app for visibility

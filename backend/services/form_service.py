@@ -23,4 +23,8 @@ def submit_contact_form(form_payload):
     # 2. Create/update store, call the store_service functions
     # 3. Create/update product, call product_service functions
     # 4. Create the lead, call lead_service functions
-    pass
+    
+    return {
+        "customer_id": customer.id,
+        "processing_complete": False
+    }

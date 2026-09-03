@@ -15,4 +15,4 @@ class Leads(MethodView):
     def post(self, form_payload):
         print("form_payload:", form_payload)
         submit_contact_form(form_payload)
-        return {"status": 200, "message": "Payload received"}
+        return {"message": "Payload received"}, 200

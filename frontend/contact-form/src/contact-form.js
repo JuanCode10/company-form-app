@@ -82,27 +82,62 @@ export function buildPayload(formElement) {
     return payload;
 }
 
-export function sendPayload(payload) {
+export async function sendPayload(payload) {
     if (!payload || typeof payload !== "object") {
         throw new Error("Invalid payload provided");
     }
 
-    // TODO: implement when API is ready.
-    return payload;
+    const response = await fetch("http://127.0.0.1:5001/leads", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.message ?? `Request failed with status ${response.status}`,
+        );
+    }
+
+    return data;
 }
 
-export function submissionHandler(event) {
+export async function submissionHandler(event) {
     if (!event || typeof event.preventDefault !== "function") {
         throw new Error("Invalid submit event provided");
     }
 
     event.preventDefault();
 
+    const submitButton = document.querySelector(".submit-button");
+    const formMessage = document.querySelector("#form-message");
+
+    if (!submitButton || !formMessage) {
+        throw new Error("Required form elements not found");
+    }
+
+    const errorMessage =
+        "Error al enviar solicitud. Por favor recargue la página e intente de nuevo.";
+
     if (!event.currentTarget) {
+        formMessage.textContent = errorMessage;
         throw new Error("Missing event target");
     }
 
-    const payload = buildPayload(event.currentTarget);
-    sendPayload(payload);
-    return payload;
+    try {
+        const payload = buildPayload(event.currentTarget);
+        const result = await sendPayload(payload);
+
+        console.log(result);
+        submitButton.value = "Solicitud enviada";
+
+        return result;
+    } catch (error) {
+        formMessage.textContent = errorMessage;
+        throw error;
+    }
 }
