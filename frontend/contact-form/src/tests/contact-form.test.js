@@ -238,7 +238,14 @@ describe("contact-form.js full testing suite...", () => {
         });
     });
     describe("submissionHandler()", () => {
-        it("should prevent default, submit, and return payload", async () => {
+        beforeEach(() => {
+            document.body.innerHTML = `
+                <input class="submit-button" type="submit" value="Enviar solicitud" />
+                <p id="form-message"></p>
+            `;
+        });
+
+        it("should prevent default, submit, and return the API response", async () => {
             const formElement = createMockForm();
             const preventDefault = vi.fn();
             fetch.mockResolvedValue({
@@ -255,18 +262,7 @@ describe("contact-form.js full testing suite...", () => {
             const result = await submissionHandler(event);
 
             expect(preventDefault).toHaveBeenCalledTimes(1);
-            expect(result).toEqual({
-                customer: {
-                    name: "Example Customer",
-                    email: "customer@example.com",
-                    phone_number: "+506 8888-7777",
-                },
-                store: "san-jose",
-                products: ["laptop", "monitor"],
-                budget: 2500,
-                purchase_time_horizon: "1-3 months",
-                customer_comments: "Need delivery details.",
-            });
+            expect(result).toEqual({ message: "Payload received" });
         });
 
         it("should reject for invalid submit event", async () => {
