@@ -1,5 +1,5 @@
 // Import vitest
-import { it, expect, describe, vi } from "vitest";
+import { it, expect, describe, vi, beforeEach, afterEach } from "vitest";
 
 // Import functions to test
 import {
@@ -29,6 +29,15 @@ function createMockForm(overrides = {}) {
 
 // --- contact-form.js testing suite ---
 describe("contact-form.js full testing suite...", () => {
+    beforeEach(() => {
+        vi.stubGlobal("fetch", vi.fn());
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
+
     describe("processName()", () => {
         it("should return trimmed string", () => {
             const input = " Example Customer ";
@@ -191,29 +200,59 @@ describe("contact-form.js full testing suite...", () => {
         });
     });
     describe("sendPayload()", () => {
-        it("should return the payload for valid input", () => {
+        it("should send the payload and return the API response", async () => {
             const payload = { ok: true };
-            const result = sendPayload(payload);
-            expect(result).toEqual(payload);
+            const responseBody = { message: "Payload received" };
+            fetch.mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue(responseBody),
+            });
+
+            const result = await sendPayload(payload);
+
+            expect(fetch).toHaveBeenCalledWith("http://127.0.0.1:5001/leads", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            expect(result).toEqual(responseBody);
         });
 
-        it("should throw error when payload is invalid", () => {
-            const resultFn = () => {
-                sendPayload(null);
-            };
-            expect(resultFn).toThrow(/Invalid payload/);
+        it("should reject when payload is invalid", async () => {
+            await expect(sendPayload(null)).rejects.toThrow(/Invalid payload/);
+            expect(fetch).not.toHaveBeenCalled();
+        });
+
+        it("should reject with the API error message for failed responses", async () => {
+            fetch.mockResolvedValue({
+                ok: false,
+                status: 422,
+                json: vi
+                    .fn()
+                    .mockResolvedValue({ message: "Invalid form data" }),
+            });
+
+            await expect(sendPayload({ ok: true })).rejects.toThrow(
+                "Invalid form data",
+            );
         });
     });
     describe("submissionHandler()", () => {
-        it("should prevent default and return payload", () => {
+        it("should prevent default, submit, and return payload", async () => {
             const formElement = createMockForm();
             const preventDefault = vi.fn();
+            fetch.mockResolvedValue({
+                ok: true,
+                json: vi
+                    .fn()
+                    .mockResolvedValue({ message: "Payload received" }),
+            });
             const event = {
                 preventDefault,
                 currentTarget: formElement,
             };
 
-            const result = submissionHandler(event);
+            const result = await submissionHandler(event);
 
             expect(preventDefault).toHaveBeenCalledTimes(1);
             expect(result).toEqual({
@@ -230,21 +269,19 @@ describe("contact-form.js full testing suite...", () => {
             });
         });
 
-        it("should throw error for invalid submit event", () => {
-            const resultFn = () => {
-                submissionHandler(null);
-            };
-            expect(resultFn).toThrow(/Invalid submit event/);
+        it("should reject for invalid submit event", async () => {
+            await expect(submissionHandler(null)).rejects.toThrow(
+                /Invalid submit event/,
+            );
         });
 
-        it("should throw error when currentTarget is missing", () => {
+        it("should reject when currentTarget is missing", async () => {
             const event = {
                 preventDefault: () => {},
             };
-            const resultFn = () => {
-                submissionHandler(event);
-            };
-            expect(resultFn).toThrow(/Missing event target/);
+            await expect(submissionHandler(event)).rejects.toThrow(
+                /Missing event target/,
+            );
         });
     });
 });
