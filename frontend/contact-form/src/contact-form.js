@@ -113,14 +113,31 @@ export async function submissionHandler(event) {
 
     event.preventDefault();
 
+    const submitButton = document.querySelector(".submit-button");
+    const formMessage = document.querySelector("#form-message");
+
+    if (!submitButton || !formMessage) {
+        throw new Error("Required form elements not found");
+    }
+
+    const errorMessage =
+        "Error al enviar solicitud. Por favor recargue la página e intente de nuevo.";
+
     if (!event.currentTarget) {
+        formMessage.textContent = errorMessage;
         throw new Error("Missing event target");
     }
 
-    const payload = buildPayload(event.currentTarget);
-    const result = await sendPayload(payload);
+    try {
+        const payload = buildPayload(event.currentTarget);
+        const result = await sendPayload(payload);
 
-    console.log(result);
+        console.log(result);
+        submitButton.value = "Solicitud enviada";
 
-    return payload;
+        return result;
+    } catch (error) {
+        formMessage.textContent = errorMessage;
+        throw error;
+    }
 }
