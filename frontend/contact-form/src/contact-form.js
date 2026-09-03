@@ -82,16 +82,31 @@ export function buildPayload(formElement) {
     return payload;
 }
 
-export function sendPayload(payload) {
+export async function sendPayload(payload) {
     if (!payload || typeof payload !== "object") {
         throw new Error("Invalid payload provided");
     }
 
-    // TODO: implement when API is ready.
-    return payload;
+    const response = await fetch("http://127.0.0.1:5001/leads", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.message ?? `Request failed with status ${response.status}`,
+        );
+    }
+
+    return data;
 }
 
-export function submissionHandler(event) {
+export async function submissionHandler(event) {
     if (!event || typeof event.preventDefault !== "function") {
         throw new Error("Invalid submit event provided");
     }
@@ -103,6 +118,9 @@ export function submissionHandler(event) {
     }
 
     const payload = buildPayload(event.currentTarget);
-    sendPayload(payload);
+    const result = await sendPayload(payload);
+
+    console.log(result);
+
     return payload;
 }
