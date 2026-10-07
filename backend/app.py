@@ -12,7 +12,6 @@ from db import db
 import models # todo: code db models
 
 # Import blueprints
-
 from resources.leads import blp as LeadBlueprint
 
 # Create app code
