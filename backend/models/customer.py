@@ -21,4 +21,4 @@ class CustomerModel(db.Model):
     )
 
     # Relationships
-    lead = db.relationship("LeadModel", back_populates="customer")
+    leads = db.relationship("LeadModel", back_populates="customer")
