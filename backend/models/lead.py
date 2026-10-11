@@ -9,7 +9,9 @@ class LeadModel(db.Model):
     # Foreign Keys
     customer_id = db.Column(db.Integer, db.ForeignKey("customers.id"))
     store_id = db.Column(db.Integer, db.ForeignKey("stores.id"))
+    sales_rep_id = db.Column(db.Integer, db.ForeignKey("sales_reps.id"))
 
     # Relationsihps
     customer = db.relationship("CustomerModel", back_populates="leads")
     store = db.relationship("StoreModel", back_populates="leads")
+    sales_rep = db.relationship("SalesRepModel", back_populates="leads")
