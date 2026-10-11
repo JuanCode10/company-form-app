@@ -21,5 +21,9 @@ class SalesRepModel(db.Model):
         onupdate=datetime.now(timezone.utc),
     )
 
+    # Foreign Keys
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.id"))
+
     # Relationships
     leads = db.relationship("LeadModel", back_populates="sales_rep")
+    store = db.relationship("StoreModel", back_populates="sales_reps")

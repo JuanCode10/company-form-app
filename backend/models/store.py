@@ -23,3 +23,4 @@ class StoreModel(db.Model):
 
     # Relationships
     leads = db.relationship("LeadModel", back_populates="store")
+    sales_reps = db.relationship("SalesRepModel", back_populates="store")
