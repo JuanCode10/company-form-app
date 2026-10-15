@@ -201,7 +201,7 @@ Example:
 
 ```html
 <label for="budget">Estimated budget</label>
-<input type="number" id="budget" name="budget" min="0" step="1" required />
+<input type="number" id="budget" name="budget" min="0" step="any" required />
 ```
 
 The final currency and allowed budget range remain open design decisions.
@@ -214,12 +214,11 @@ Possible initial values include:
 
 | Displayed Label      | Submitted Value        |
 | -------------------- | ---------------------- |
-| As soon as possible  | `immediately`          |
-| Within one month     | `within_one_month`     |
-| Within three months  | `within_three_months`  |
-| Within six months    | `within_six_months`    |
-| More than six months | `more_than_six_months` |
-| I am not sure yet    | `undecided`            |
+| Within one month     | `one_month`            |
+| Within three months  | `three_months`          |
+| Within six months    | `six_months`            |
+| More than six months | `more_six_months`       |
+| I am not sure yet    | `not_decided`           |
 
 Example:
 
@@ -230,12 +229,11 @@ Example:
 
 <select id="purchase-time-horizon" name="purchase_time_horizon" required>
     <option value="">Select an option</option>
-    <option value="immediately">As soon as possible</option>
-    <option value="within_one_month">Within one month</option>
-    <option value="within_three_months">Within three months</option>
-    <option value="within_six_months">Within six months</option>
-    <option value="more_than_six_months">More than six months</option>
-    <option value="undecided">I am not sure yet</option>
+    <option value="one_month">Within one month</option>
+    <option value="three_months">Within three months</option>
+    <option value="six_months">Within six months</option>
+    <option value="more_six_months">More than six months</option>
+    <option value="not_decided">I am not sure yet</option>
 </select>
 ```
 
@@ -296,7 +294,7 @@ Customers should be able to provide additional information that does not fit int
 | HTML control   | `<textarea>`        |
 | Required       | No                  |
 | API field      | `customer_comments` |
-| Maximum length | To be defined       |
+| Maximum length | 500 characters      |
 
 Example:
 
@@ -307,13 +305,14 @@ Example:
     id="customer-comments"
     name="customer_comments"
     rows="5"
+    maxlength="500"
     placeholder="Tell us anything else that may help us understand what you need."
 ></textarea>
 ```
 
 JavaScript should trim leading and trailing whitespace before creating the request payload.
 
-The backend must enforce the final maximum length even if client-side validation is also present.
+The backend must enforce the 500-character maximum even if client-side validation is also present.
 
 ## Field Summary
 

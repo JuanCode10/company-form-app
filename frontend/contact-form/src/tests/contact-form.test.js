@@ -20,7 +20,7 @@ function createMockForm(overrides = {}) {
         customerPhone: { value: "88887777" },
         store: { value: "san-jose" },
         budget: { value: "2500" },
-        purchaseTimeHorizon: { value: "1-3 months" },
+        purchaseTimeHorizon: { value: "one_month" },
         customerComments: { value: "Need delivery details." },
         querySelectorAll: () => [{ value: "laptop" }, { value: "monitor" }],
         ...overrides,
@@ -177,7 +177,7 @@ describe("contact-form.js full testing suite...", () => {
                 store: "san-jose",
                 products: ["laptop", "monitor"],
                 budget: 2500,
-                purchase_time_horizon: "1-3 months",
+                purchase_time_horizon: "one_month",
                 customer_comments: "Need delivery details.",
             });
         });
@@ -236,6 +236,18 @@ describe("contact-form.js full testing suite...", () => {
                 "Invalid form data",
             );
         });
+
+        it("uses the HTTP status when the API error has no message", async () => {
+            fetch.mockResolvedValue({
+                ok: false,
+                status: 500,
+                json: vi.fn().mockResolvedValue({}),
+            });
+
+            await expect(sendPayload({ ok: true })).rejects.toThrow(
+                "Request failed with status 500",
+            );
+        });
     });
     describe("submissionHandler()", () => {
         beforeEach(() => {
@@ -277,6 +289,34 @@ describe("contact-form.js full testing suite...", () => {
             };
             await expect(submissionHandler(event)).rejects.toThrow(
                 /Missing event target/,
+            );
+        });
+
+        it("should reject when required status elements are missing", async () => {
+            document.body.innerHTML = "";
+
+            await expect(
+                submissionHandler({
+                    preventDefault: vi.fn(),
+                    currentTarget: createMockForm(),
+                }),
+            ).rejects.toThrow(/Required form elements not found/);
+        });
+
+        it("shows an error when payload construction fails", async () => {
+            const formElement = createMockForm({
+                customerEmail: { value: "invalid-email" },
+            });
+
+            await expect(
+                submissionHandler({
+                    preventDefault: vi.fn(),
+                    currentTarget: formElement,
+                }),
+            ).rejects.toThrow(/Invalid email/);
+
+            expect(document.querySelector("#form-message").textContent).toMatch(
+                /Error al enviar solicitud/,
             );
         });
     });
