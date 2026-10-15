@@ -4,9 +4,9 @@ The current Flask application registers one public endpoint:
 
 | Method | Endpoint | Current behavior                                                                                                                                                 |
 | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST` | `/leads` | Validates the form payload, creates or reuses a customer by normalized phone number, and returns `200 OK` with `{"status": 200, "message": "Payload received"}`. |
+| `POST` | `/leads` | Validates the form payload, creates or reuses a customer by normalized phone number, and returns `200 OK` with `{"message": "Payload received"}`. |
 
-The route is currently `/leads`, not `/api/v1/leads`. The service does not yet create a lead or resolve and persist store and product values. `GET /stores`, `GET /products`, and `/health` are not implemented.
+The route is currently `/leads`, not `/api/v1/leads`. The service does not yet create a lead or resolve and persist store and product values. `GET /stores`, `GET /products`, and `/health` are not implemented. Marshmallow request-schema failures return `422`; customer-service validation errors are not yet mapped to structured responses. The frontend displays a generic error message for failed requests.
 
 ## Target API Conventions
 
@@ -15,8 +15,8 @@ The initial API should follow these conventions:
 - Request and response bodies use JSON
 - JSON property names use `snake_case`
 - Resource names use plural nouns
-- Internal database records use UUIDsa
-- Database UUIDs are not required in public customer form submissions
+- Internal database records use database-managed numeric IDs
+- Database IDs are not required in public customer form submissions
 - Public requests use business-level values for stores and products
 - Datetimes use ISO 8601 format
 - Public API endpoints use the `/api/v1` prefix
@@ -33,7 +33,7 @@ This separation keeps the API layer focused on request handling and delegation, 
 
 ## Client-Facing Store and Product Values
 
-The public frontend should not need to know the internal database UUIDs assigned to stores and products.
+The public frontend should not need to know the internal database IDs assigned to stores and product categories.
 
 The customer form will present readable store and product names through dropdown menus or other predefined input controls.
 
@@ -43,45 +43,34 @@ For example:
 
 ```javascript
 const stores = {
-    "San José": "san-jose",
-    Heredia: "heredia",
+    "La Mora": "la-mora",
+    "San Sebastián": "san-sebastian",
 };
 ```
 
-However, the exact client-facing identifier strategy does not need to be finalized during the initial design.
-
-The first implementation may submit the displayed names directly:
+The current form submits stable client-facing codes:
 
 ```json
 {
-    "store": "San José",
-    "products": ["Bed", "Nightstand"]
+    "store": "san-sebastian",
+    "products": ["bed"]
 }
 ```
 
-A future implementation may instead submit stable codes:
+The client does not submit internal database IDs.
 
-```json
-{
-    "store": "san-jose",
-    "products": ["bed", "nightstand"]
-}
-```
+The backend should resolve these values to the corresponding `Store` and `ProductCategory` database records; that resolution is not implemented yet.
 
-In either case, the client will not submit internal database UUIDs.
-
-The backend will be responsible for resolving the submitted values to the corresponding `Store` and `Product` database records.
-
-The database relationships will continue to use UUID foreign keys internally:
+The database relationships use numeric foreign keys internally:
 
 ```text
 Lead.store_id -> Store.id
-LeadProduct.product_id -> Product.id
+LeadProductCategory.product_category_id -> ProductCategory.id
 ```
 
 This keeps the public API separated from the database implementation.
 
-Changing from names to stable codes or database identifiers later would require a coordinated API and frontend update, but it would not require redesigning the underlying database relationships.
+Changing these public codes later would require a coordinated API and frontend update, but it would not require redesigning the underlying database relationships.
 
 ## Initial Resources
 
@@ -130,12 +119,12 @@ The frontend sends customer information and lead information together in one req
     "customer": {
         "name": "Example Customer",
         "email": "customer@example.com",
-        "phone_number": "88888888"
+        "phone_number": "+506 8888-7777"
     },
-    "store": "San José",
-    "products": ["Bed", "Nightstand"],
-    "budget": 500000,
-    "purchase_time_horizon": "within_one_month",
+    "store": "san-sebastian",
+    "products": ["bed"],
+    "budget": 500000.50,
+    "purchase_time_horizon": "one_month",
     "customer_comments": "I am looking for a queen-size bed."
 }
 ```
@@ -146,17 +135,17 @@ The frontend sends customer information and lead information together in one req
 | ----------------------- | ---------------- | ----------- | --------------------------------------------------------------- |
 | `customer`              | Object           | Yes         | Customer identity and contact information                       |
 | `customer.name`         | String           | Yes         | Customer's full name                                            |
-| `customer.email`        | String           | Conditional | Customer's email address                                        |
-| `customer.phone_number` | String           | Conditional | Customer's phone number                                         |
+| `customer.email`         | String           | Yes         | Customer's email address                                        |
+| `customer.phone_number` | String           | Yes         | Customer's phone number                                         |
 | `store`                 | String           | Yes         | Client-facing name or code representing the selected store      |
 | `products`              | Array of strings | Yes         | Client-facing names or codes representing the selected products |
 | `budget`                | Number           | Yes         | Customer's estimated purchase budget                            |
-| `purchase_time_horizon` | String           | Yes         | Estimated timeframe for the purchase                            |
-| `customer_comments`     | String           | No          | Additional questions, requests, or information                  |
+| `purchase_time_horizon` | String           | Yes         | One of `one_month`, `three_months`, `six_months`, `more_six_months`, or `not_decided` |
+| `customer_comments`     | String (max 500) | Yes         | Additional questions, requests, or information; empty string is allowed |
 
-At least one contact method should be required. The exact rule for requiring email, phone number, or both remains an implementation decision.
+The current form and API require both email and phone number. The business may revisit this policy.
 
-The exact format used by `store` and `products` also remains an implementation decision. The initial version may use names, while a future version may use stable client-facing codes.
+The current form submits stable codes for stores (`la-mora`, `san-sebastian`) and product categories (`bed`, `table`, `sofa`).
 
 ### Backend Processing
 
@@ -168,7 +157,7 @@ After receiving a valid request, the backend should:
 4. Normalize the submitted store value
 5. Query the `Store` model to find the corresponding active store
 6. Normalize every submitted product value
-7. Query the `Product` model to find the corresponding active products
+7. Query the `ProductCategory` model to find the corresponding active categories
 8. Reject the request if the submitted store is unknown or inactive
 9. Reject the request if any submitted product is unknown or inactive
 10. Create the lead
@@ -196,14 +185,14 @@ Response body:
 {
     "message": "Lead created successfully.",
     "lead": {
-        "id": "a1886b1d-80ad-4700-909a-da4ffdbe4050",
+        "id": 1234,
         "status": "new",
         "created_at": "2026-07-24T19:30:00-06:00"
     }
 }
 ```
 
-The generated lead UUID may be returned as a reference for the newly created resource.
+The generated numeric lead ID may be returned as a reference for the newly created resource.
 
 The public response should not expose internal store IDs, product IDs, database relationships, internal notes, or unrelated customer history.
 
@@ -217,7 +206,7 @@ GET /api/v1/stores
 
 This endpoint returns the store locations that may be selected in the customer form.
 
-The response should provide the information required to build the dropdown menu without exposing database UUIDs.
+The response should provide the information required to build the dropdown menu without exposing database IDs.
 
 ### Successful Response
 
@@ -233,12 +222,12 @@ Response body:
 {
     "stores": [
         {
-            "value": "San José",
-            "label": "San José"
+            "value": "la-mora",
+            "label": "La Mora"
         },
         {
-            "value": "Heredia",
-            "label": "Heredia"
+            "value": "san-sebastian",
+            "label": "San Sebastián"
         }
     ]
 }
@@ -246,14 +235,12 @@ Response body:
 
 The `label` represents the text displayed to the customer.
 
-The `value` represents the value submitted by the frontend. During the initial implementation, the value and label may be identical.
-
-A future version may use a stable code as the value:
+The `value` is the stable code submitted by the current frontend:
 
 ```json
 {
-    "value": "san-jose",
-    "label": "San José"
+    "value": "san-sebastian",
+    "label": "San Sebastián"
 }
 ```
 
@@ -269,7 +256,7 @@ GET /api/v1/products
 
 This endpoint returns the products or product categories available in the customer form.
 
-The response should provide the information required to build the product selection controls without exposing database UUIDs.
+The response should provide the information required to build the product selection controls without exposing database IDs.
 
 ### Successful Response
 
@@ -285,28 +272,31 @@ Response body:
 {
     "products": [
         {
-            "value": "Bed",
-            "label": "Bed",
-            "description": "Beds and related bedroom furniture"
+            "value": "bed",
+            "label": "Cama",
+            "description": "Categoría cama"
         },
         {
-            "value": "Nightstand",
-            "label": "Nightstand",
-            "description": "Nightstands and related bedroom furniture"
+            "value": "table",
+            "label": "Comedor",
+            "description": "Categoría comedor"
+        },
+        {
+            "value": "sofa",
+            "label": "Sillón",
+            "description": "Categoría sillón"
         }
     ]
 }
 ```
 
-During the initial implementation, the submitted value and displayed label may be identical.
-
-A future version may use stable codes:
+The current form submits stable codes:
 
 ```json
 {
     "value": "bed",
-    "label": "Bed",
-    "description": "Beds and related bedroom furniture"
+    "label": "Cama",
+    "description": "Categoría cama"
 }
 ```
 
@@ -319,41 +309,17 @@ Only active products should be returned.
 - `customer.name`, `customer.email`, and `customer.phone_number`
 - `store`, restricted to `la-mora` or `san-sebastian`
 - `products` as a list of strings
-- `budget` as an integer
+- `budget` as a floating-point number
 - `purchase_time_horizon`, restricted to the configured choices
-- `customer_comments` as a string
+- `customer_comments` as a string of at most 500 characters
 
 Phone numbers are normalized by the customer service to the `+506 1234-5678` format. Customer identity is currently determined by the normalized phone number; email is stored but is not unique.
 
-## Target Validation
+## Remaining Validation Work
 
-Input validation will be implemented using Marshmallow schemas.
+The current Marshmallow schema validates required fields, the supported store and purchase-horizon values, budget as a number, and comments as a string of at most 500 characters. The lead model additionally stores budget as a non-null float, allows comments to be null, and restricts purchase horizons to the configured enum values.
 
-The API should validate:
-
-- Required fields
-- Customer name length
-- Email format
-- Phone-number format
-- Presence of at least one contact method
-- Budget type and allowed range
-- Allowed purchase time-horizon values
-- Presence of a store value
-- Presence of at least one product value
-- Maximum number of selected products
-- Maximum customer-comment length
-- Store existence
-- Product existence
-- Product active status
-- Store active status
-
-Validation should occur before database changes are committed.
-
-Marshmallow will validate the structure and format of the request.
-
-Database queries and business logic will validate that submitted store and product values correspond to existing active records.
-
-Database constraints should also be used where appropriate. API validation improves the client experience, while database constraints protect the stored data.
+The request schema does not constrain email or phone formats, although the customer service checks them while processing the customer. These service errors are not yet translated into structured validation responses. The API also does not require at least one selected product, enforce a positive budget range, or resolve store and product values against active database records. These gaps should be addressed before full lead persistence.
 
 ## Store and Product Resolution
 
@@ -383,7 +349,7 @@ Submitted product values
 Normalize each value
         |
         v
-Query Product model
+Query ProductCategory model
         |
         v
 Product database entities
@@ -405,19 +371,15 @@ Each value must correspond to a known and active database record.
 The following decisions remain open:
 
 - Database engine to use in deployment
-- Budget currency and storage format
+- Whether to store currency metadata; the form currently labels its budget in Costa Rican colones, while the API accepts a unitless number
 - Exact customer uniqueness and matching rules
-- Whether both email and phone number are required
-- Final purchase time-horizon options
-- Maximum allowed comment length
+- Whether both email and phone number should remain required
 - Maximum number of products per lead
-- Whether the initial store value uses a name or stable code
-- Whether the initial product values use names or stable codes
-- Whether store and product codes should later be stored in the database
+- Whether store and product codes should be configurable rather than hard-coded in the initial form
 - Automatic lead-priority calculation
 - Store and product active-status behavior
 - Authentication and employee role structure
 - API rate limiting and spam prevention
-- Cross-origin resource sharing configuration
+- Restricting the current wildcard cross-origin resource sharing configuration for deployment
 
 These decisions should be resolved only when required by an implementation step.

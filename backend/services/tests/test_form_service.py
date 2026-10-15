@@ -14,7 +14,7 @@ def test_submit_contact_form_creates_customer_and_returns_processing_result(monk
         "store": "san-sebastian",
         "products": ["bed"],
         "budget": 1200,
-        "purchase_time_horizon": "within_one_month",
+        "purchase_time_horizon": "one_month",
         "customer_comments": "Call after 5 PM.",
     }
 

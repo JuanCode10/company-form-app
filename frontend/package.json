@@ -13,6 +13,7 @@
     "author": "Juan Cerdas",
     "license": "ISC",
     "devDependencies": {
+        "@vitest/coverage-v8": "^4.1.10",
         "http-server": "^14.1.0",
         "install": "^0.13.0",
         "jsdom": "^29.1.1",
