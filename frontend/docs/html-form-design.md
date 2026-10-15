@@ -4,7 +4,7 @@
 
 The HTML form is implemented at `frontend/contact-form/index.html` and is currently rendered in Spanish. It contains required inputs for name, email, phone, budget, purchase horizon, and store; optional comments; and checkbox product choices for bed, table, and sofa.
 
-The form's module submit handler prevents the browser default, builds a validated payload, and calls `sendPayload`. It does not yet make an HTTP request or display submission status. Store and product options are currently static rather than loaded from the backend.
+The form's module submit handler prevents the browser default, builds a payload, and submits it to `POST /leads` through `sendPayload`. It changes the submit button after a successful response and displays a generic error message after a failed request. Store and product options are currently static rather than loaded from the backend.
 
 ## Purpose
 
@@ -58,19 +58,12 @@ This section collects the customer's identity and contact information.
 | Field         | HTML Control           |    Required | Description              |
 | ------------- | ---------------------- | ----------: | ------------------------ |
 | Full name     | `<input type="text">`  |         Yes | Customer's full name     |
-| Email address | `<input type="email">` | Conditional | Customer's email address |
-| Phone number  | `<input type="tel">`   | Conditional | Customer's phone number  |
+| Email address | `<input type="email">` | Yes         | Customer's email address |
+| Phone number  | `<input type="tel">`   | Yes         | Customer's phone number  |
 
-At least one contact method should be required.
+The current form and API require both email and phone number. The business may revisit this requirement.
 
-The exact rule for requiring email, phone number, or both remains an implementation decision.
-
-Possible initial behavior:
-
-- Full name is always required
-- The customer must provide an email address, a phone number, or both
-- Email format is validated by the browser and JavaScript
-- Phone-number validation should allow the expected Costa Rican format without preventing future international support
+The browser and client-side JavaScript validate the email, and the JavaScript normalizes Costa Rican phone numbers.
 
 Example HTML structure:
 
@@ -82,7 +75,7 @@ Example HTML structure:
     <input
         type="text"
         id="customer-name"
-        name="customer_name"
+        name="customerName"
         autocomplete="name"
         required
     />
@@ -91,16 +84,18 @@ Example HTML structure:
     <input
         type="email"
         id="customer-email"
-        name="customer_email"
+        name="customerEmail"
         autocomplete="email"
+        required
     />
 
     <label for="customer-phone">Phone number</label>
     <input
         type="tel"
         id="customer-phone"
-        name="customer_phone"
+        name="customerPhone"
         autocomplete="tel"
+        required
     />
 </section>
 ```
@@ -109,14 +104,11 @@ Example HTML structure:
 
 The customer should be able to select one or more general products or product categories.
 
-Possible initial options include:
+The current hard-coded form options are:
 
-- Bed
-- Table
-- Chair
-- Sofa
-- Nightstand
-- Other
+- Bed (`bed`)
+- Table/dining set (`table`)
+- Sofa (`sofa`)
 
 Because one lead may contain multiple products, the input should support multiple selections.
 
@@ -135,18 +127,18 @@ Example:
     <legend>Which products are you interested in?</legend>
 
     <label>
-        <input type="checkbox" name="products" value="Bed" />
-        Bed
+        <input type="checkbox" name="products" value="bed" />
+        Cama
     </label>
 
     <label>
-        <input type="checkbox" name="products" value="Table" />
-        Table
+        <input type="checkbox" name="products" value="table" />
+        Comedor
     </label>
 
     <label>
-        <input type="checkbox" name="products" value="Sofa" />
-        Sofa
+        <input type="checkbox" name="products" value="sofa" />
+        Sillón
     </label>
 </fieldset>
 ```
@@ -159,29 +151,20 @@ GET /api/v1/products
 
 The backend response will provide a display label and a client-facing value.
 
-For the initial implementation, these values may be identical:
-
-```json
-{
-    "value": "Bed",
-    "label": "Bed"
-}
-```
-
-A future version may use a stable code:
+The current form submits stable codes with Spanish display labels:
 
 ```json
 {
     "value": "bed",
-    "label": "Bed"
+    "label": "Cama"
 }
 ```
 
 The frontend should treat the value as an API-facing value and the label as customer-facing text.
 
-Internal database UUIDs should not be exposed through the form.
+Internal database IDs should not be exposed through the form.
 
-At least one product should be selected before the form can be submitted.
+The current form and API do not enforce that at least one product is selected; the frontend currently sends an empty array when none are checked.
 
 ## Purchase Information
 
@@ -194,31 +177,29 @@ This section collects information that may help qualify and prioritize the lead.
 | HTML control   | `<input type="number">` |
 | Required       | Yes                     |
 | Expected value | Positive numeric amount |
-| Currency       | To be defined           |
+| Currency       | Costa Rican colones (CRC), as displayed by the form |
 | API field      | `budget`                |
 
 Example:
 
 ```html
 <label for="budget">Estimated budget</label>
-<input type="number" id="budget" name="budget" min="0" step="any" required />
+<input type="number" id="budget" name="budget" min="1" step="any" required />
 ```
 
-The final currency and allowed budget range remain open design decisions.
+The form requires a positive numeric amount and permits decimals. The API currently accepts a number but does not enforce a positive range or retain currency metadata.
 
 ### Purchase Time Horizon
 
-The purchase time horizon should use predefined options instead of unrestricted text.
+The purchase time horizon uses the following fixed values, validated by both the API schema and the database model:
 
-Possible initial values include:
-
-| Displayed Label      | Submitted Value        |
-| -------------------- | ---------------------- |
-| Within one month     | `one_month`            |
-| Within three months  | `three_months`          |
-| Within six months    | `six_months`            |
-| More than six months | `more_six_months`       |
-| I am not sure yet    | `not_decided`           |
+| Displayed Label      | Submitted Value |
+| -------------------- | --------------- |
+| Within one month     | `one_month` |
+| Within three months  | `three_months` |
+| Within six months    | `six_months` |
+| More than six months | `more_six_months` |
+| I am not sure yet    | `not_decided` |
 
 Example:
 
@@ -227,7 +208,7 @@ Example:
     When are you planning to make the purchase?
 </label>
 
-<select id="purchase-time-horizon" name="purchase_time_horizon" required>
+<select id="purchase-time-horizon" name="purchaseTimeHorizon" required>
     <option value="">Select an option</option>
     <option value="one_month">Within one month</option>
     <option value="three_months">Within three months</option>
@@ -237,7 +218,7 @@ Example:
 </select>
 ```
 
-The final list of options may change after discussing the qualification process with the business.
+Changing these values requires updating the shared backend choices, form, and tests together.
 
 ## Preferred Store
 
@@ -248,7 +229,7 @@ The customer should select the store location that serves them best.
 | HTML control | `<select>`           |
 | Required     | Yes                  |
 | API field    | `store`              |
-| Data source  | `GET /api/v1/stores` |
+| Data source  | Static form options (`la-mora`, `san-sebastian`); API lookup is planned |
 
 Example initial structure:
 
@@ -268,22 +249,22 @@ Example backend response:
 {
     "stores": [
         {
-            "value": "San José",
-            "label": "San José"
+            "value": "la-mora",
+            "label": "La Mora"
         },
         {
-            "value": "Heredia",
-            "label": "Heredia"
+            "value": "san-sebastian",
+            "label": "San Sebastián"
         }
     ]
 }
 ```
 
-The customer sees the `label`, while the form submits the corresponding `value`.
+When API option retrieval is implemented, the customer will see the `label` while the form submits the corresponding `value`.
 
-The submitted value may initially be the store name. A stable client-facing code may be introduced later.
+The current form uses the stable codes `la-mora` and `san-sebastian`.
 
-Internal database UUIDs should not be required by the frontend.
+Internal database IDs should not be required by the frontend.
 
 ## Additional Comments
 
@@ -303,14 +284,14 @@ Example:
 
 <textarea
     id="customer-comments"
-    name="customer_comments"
+    name="customerComments"
     rows="5"
     maxlength="500"
     placeholder="Tell us anything else that may help us understand what you need."
 ></textarea>
 ```
 
-JavaScript should trim leading and trailing whitespace before creating the request payload.
+The current JavaScript sends comments as entered; it does not trim leading or trailing whitespace. The HTML limits entry to 500 characters, and the API also rejects comments longer than 500 characters.
 
 The backend must enforce the 500-character maximum even if client-side validation is also present.
 
@@ -319,49 +300,41 @@ The backend must enforce the 500-character maximum even if client-side validatio
 | Form Field            | HTML Control               |    Required | Payload Field           |
 | --------------------- | -------------------------- | ----------: | ----------------------- |
 | Full name             | Text input                 |         Yes | `customer.name`         |
-| Email address         | Email input                | Conditional | `customer.email`        |
-| Phone number          | Telephone input            | Conditional | `customer.phone_number` |
-| Products              | Checkboxes or multi-select |         Yes | `products`              |
+| Email address         | Email input                |         Yes | `customer.email`        |
+| Phone number          | Telephone input            |         Yes | `customer.phone_number` |
+| Products              | Checkboxes or multi-select |          No | `products` (array may be empty) |
 | Budget                | Number input               |         Yes | `budget`                |
 | Purchase time horizon | Select menu                |         Yes | `purchase_time_horizon` |
 | Preferred store       | Select menu                |         Yes | `store`                 |
 | Additional comments   | Text area                  |          No | `customer_comments`     |
 
-## Client-Side Validation
+## Current Client-Side Validation
 
 Client-side validation improves the customer experience by identifying obvious problems before a request is sent.
 
-The frontend should initially validate:
+The current frontend:
 
-- Full name is present
-- At least one contact method is present
-- Email has a valid format when provided
-- Phone number has an acceptable format when provided
-- At least one product is selected
-- A store is selected
-- Budget is present and greater than or equal to the allowed minimum
-- Purchase time horizon is selected
-- Customer comments do not exceed the allowed length
+- Requires and trims the customer's name and email, and checks the email format.
+- Normalizes the phone number to the Costa Rican `+506 1234-5678` format.
+- Converts the budget to a number and requires it to be finite and greater than zero.
+- Uses required HTML controls for both contact methods, store, budget, and purchase time horizon.
+- Limits comments to 500 characters in the HTML control.
+- Does not require a product selection or trim customer comments before submission.
 
-Client-side validation does not replace backend validation.
+The API independently validates required fields, store and purchase-time-horizon choices, numeric budget, and the comments type and length. It currently requires both email and phone number. The request schema does not constrain their formats, though the customer service checks them when processing the submission; the API does not require at least one product.
 
-All submitted information must still be validated by the REST API because client-side checks can be modified or bypassed.
+Client-side validation does not replace backend validation because browser-side checks can be modified or bypassed.
 
 ## Form Submission Behavior
 
-When the customer submits the form, JavaScript should:
+When the customer submits the form, JavaScript currently:
 
-1. Prevent the browser's default form submission
-2. Read the current form values
-3. Trim and normalize appropriate text fields
-4. Confirm that the required fields are valid
-5. Collect all selected product values
-6. Create the JavaScript payload object
-7. Convert the object to JSON
-8. Send it to `POST /api/v1/leads`
-9. Disable the submit button while the request is being processed
-10. Display a success or error message
-11. Re-enable the submit button when appropriate
+1. Prevents the browser's default form submission.
+2. Reads the current form values and builds the JSON payload.
+3. Sends it to `POST /leads` at the configured-in-code local URL.
+4. Changes the submit button value after success or displays a generic error message after failure.
+
+The current handler does not show a loading state, disable the button while submitting, or reset the form after success.
 
 Conceptual flow:
 
@@ -378,7 +351,7 @@ Create JavaScript object
 Convert object to JSON
         |
         v
-POST /api/v1/leads
+POST /leads
         |
         v
 Display result
@@ -471,7 +444,7 @@ The frontend should not be treated as a trusted source.
 The form should not contain:
 
 - Database credentials
-- Internal database UUID mappings
+- Internal database ID mappings
 - API secrets
 - Authentication secrets
 - Private employee information
@@ -488,13 +461,10 @@ The following decisions remain open:
 - Final form visual style
 - Final product categories
 - Whether product selection uses checkboxes or a multi-select component
-- Whether both email and phone number are required
+- Whether both email and phone number should remain required
 - Exact phone-number validation rules
-- Budget currency
 - Minimum and maximum budget values
-- Final purchase time-horizon options
-- Maximum comment length
-- Whether store and product values use names or stable codes
+- Whether current store and product codes should be replaced or mapped to database records
 - Whether the form is cleared immediately after success
 - Exact success and error messages
 

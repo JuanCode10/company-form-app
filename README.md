@@ -26,17 +26,16 @@ The repository now contains an initial working form and backend intake slice:
 
 - The Spanish-language contact form captures customer details, products, budget, purchase horizon, store, and comments.
 - Client-side JavaScript trims and validates names and emails, normalizes Costa Rican phone numbers, collects selected products, and builds the documented JSON payload.
-- The Flask application exposes `POST /leads`; its Marshmallow schema validates the payload structure and supported store and purchase-horizon values.
+- The Flask application exposes `POST /leads`; its Marshmallow schema validates required fields, supported store and purchase-horizon values, numeric budget, and the 500-character comments limit.
 - Customer records use the submitted phone number as their unique key. The customer service normalizes the phone number and returns an existing customer for repeat submissions.
-- SQLAlchemy is configured with SQLite by default (`sqlite:///data.db`), and the current `CustomerModel` is created when the application starts.
+- SQLAlchemy is configured with SQLite by default (`sqlite:///data.db`), and `db.create_all()` creates the declared models when the application starts. The intake service currently persists customers only; lead, store, and product persistence is not implemented.
 
-The form does not yet send a network request: `sendPayload` currently returns the validated payload. The backend currently creates or reuses the customer only; lead, store, and product persistence are not implemented.
+The form submits JSON to `POST /leads` at `http://127.0.0.1:5001/leads`. The backend responds with a generic acknowledgement after processing the customer; it does not yet return a created lead ID or persist the submitted lead, store, or products.
 
 ## Future Objectives
 
 The following objectives address the remaining intake and lead-management needs in later milestones:
 
-- Complete the form submission round trip so customers receive an accurate success or error result from the API.
 - Persist complete lead submissions in a local SQLite database, including the selected store and products.
 - Introduce lead classification and prioritization after the stored lead workflow is established.
 - Build authenticated store and sales-representative workflows for assignment, follow-up, and lead resolution.
@@ -108,23 +107,30 @@ The interface should:
 
 6. Attach the recorded outcome and comments to the customer's history to support future contact, more personalized service, and better customer interactions
 
-## Completed Milestone: Form Intake Foundation
+## Completed Milestone: Form Submission Round Trip
 
-The initial implementation established the form, payload construction, backend schema, customer service, and an initial SQLite-backed customer model.
+The form, payload construction, backend schema, customer service, SQLite customer persistence, and `POST /leads` request/response path are implemented. Lead, store, and product persistence and detailed submission outcomes remain incomplete.
 
-## Next Milestone: Form Submission Round Trip
+## Next Milestone: Local SQLite Lead Storage
 
-- Implement `sendPayload` with `fetch` and submit the JSON payload to `POST /leads`.
-- Return a meaningful API response for accepted submissions and validation failures.
-- Add form submission states for submitting, successful, and failed requests.
-- Align the frontend request URL with the backend route and configure local cross-origin behavior if the applications use different origins.
-
-## Following Milestone: Local SQLite Lead Storage
-
-- Implement SQLite models and persistence for leads, stores, products, and lead-product associations.
+- Implement persistence for complete lead submissions using the existing SQLAlchemy models.
 - Resolve the submitted store and product values against locally seeded records.
 - Create the complete lead submission in a transaction, associated with its customer.
 - Replace the fixed acknowledgement with a response containing the persisted lead's public identifier and initial status.
+
+## Tests
+
+Run the backend tests and coverage report from `backend/`:
+
+```sh
+../.venv/bin/python -m pytest --cov=. --cov-report=term-missing
+```
+
+Run frontend tests and coverage from `frontend/`:
+
+```sh
+npm test -- --coverage
+```
 
 ## Initial Milestone Reference
 

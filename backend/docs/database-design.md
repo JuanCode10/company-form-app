@@ -4,18 +4,17 @@
 
 The application is configured to use `sqlite:///data.db` when `DATABASE_URL` is not set. On startup, it runs `db.create_all()`.
 
-Only the `customers` table is currently modeled and used. It has an integer primary key, required name and phone number, optional email, timestamps, and a uniqueness constraint on `phone_number`. The customer service normalizes the phone number, returns an existing customer when it finds the same number, or persists a new customer. The form captures `product_category` as the customer's area of interest rather than requiring a specific product.
+SQLAlchemy models are declared for customers, leads, stores, sales representatives, product categories, and the lead/product-category association. The customer service normalizes phone numbers, returns an existing customer when it finds the same number, or persists a new customer. The form captures product categories as areas of interest.
 
-`Lead`, `Store`, `ProductCategory`, `SalesRepresentative`, and `LeadProductCategory` remain target entities. No models, migrations, seed data, or persistence workflow exist for them yet. The next SQLite milestone should implement the lead-related subset needed for a complete submission before the employee-management entities.
+Only customer persistence is currently used by the intake workflow. Lead, store, product-category, and sales-representative persistence, seed data, and migrations are not implemented. The lead model includes a floating-point budget, an optional 500-character comments column, and a non-null purchase-horizon enum limited to the five supported choices.
 
 ## Target Database Design
 
-The first implementation checkpoint will focus only on:
+The remaining database implementation should focus on:
 
-1. Creating the customer form
-2. Sending the submitted information to the Python REST API
-3. Validating the submitted information
-4. Storing the information in the database
+1. Resolving submitted store and product-category values against database records
+2. Persisting each submitted lead with its customer, store, and selected product categories
+3. Returning a response containing the persisted lead's public identifier and initial status
 
 Authentication, store dashboards, sales representative assignments, WhatsApp integration, automatic prioritization, and lead resolution workflows will be considered future milestones.
 
@@ -23,7 +22,7 @@ Authentication, store dashboards, sales representative assignments, WhatsApp int
 
 The project will use different database engines depending on the environment:
 
-1. Local development: SQLite (configured now; lead storage remains to be implemented)
+1. Local development: SQLite (configured now; lead persistence remains to be implemented)
 2. Remote/staging/production: MariaDB
 
 Primary key IDs will not be generated as UUIDs by the application layer. Instead, each database engine will manage ID generation automatically using its native auto-increment behavior.
@@ -242,9 +241,9 @@ erDiagram
         int customer_id FK
         int store_id FK
         int sales_representative_id FK
-        decimal budget
-        string purchase_time_horizon
-        string customer_comments
+        float budget
+        enum purchase_time_horizon
+        string customer_comments "nullable, max 500"
         string sales_representative_notes
         string status
         string priority

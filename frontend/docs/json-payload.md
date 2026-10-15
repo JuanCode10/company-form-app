@@ -2,9 +2,9 @@
 
 ## Implementation Status
 
-`buildPayload` currently constructs this payload from the form and validates or normalizes the customer fields before doing so. In particular, it converts the budget to a number and formats eight-digit Costa Rican phone numbers as `+506 1234-5678`.
+`buildPayload` currently constructs the payload, trims and validates the name and email, converts the budget to a number, and formats eight-digit Costa Rican phone numbers as `+506 1234-5678`.
 
-`sendPayload` currently validates that it received an object and returns it unchanged. The frontend does not yet serialize the object or send it to the backend. The round-trip milestone will implement the documented Fetch request and handle the API response.
+`sendPayload` posts the payload as JSON to `http://127.0.0.1:5001/leads`. It returns the JSON response on success and throws an error for non-success HTTP responses. `submissionHandler` changes the submit button after success and displays a generic error message after failure.
 
 ## Purpose
 
@@ -28,7 +28,7 @@ The initial payload should follow these principles:
 - Use `snake_case` property names
 - Group customer information inside a `customer` object
 - Represent multiple selected products as an array
-- Send store and product business values rather than internal database UUIDs
+- Send store and product-category values rather than internal database IDs
 - Avoid sending fields generated or managed by the backend
 - Avoid including undefined or unrelated information
 - Keep the payload simple enough to construct from the HTML form
@@ -40,11 +40,11 @@ The initial payload should follow these principles:
     "customer": {
         "name": "Example Customer",
         "email": "customer@example.com",
-        "phone_number": "88888888"
+        "phone_number": "+506 8888-7777"
     },
-    "store": "San José",
-    "products": ["Bed", "Nightstand"],
-    "budget": 500000,
+    "store": "san-sebastian",
+    "products": ["bed"],
+    "budget": 500000.50,
     "purchase_time_horizon": "one_month",
     "customer_comments": "I am looking for a queen-size bed."
 }
@@ -56,17 +56,15 @@ The initial payload should follow these principles:
 | ----------------------- | ---------------- | ----------: | ----------------------------- |
 | `customer`              | Object           |         Yes | Customer-information section  |
 | `customer.name`         | String           |         Yes | Full-name input               |
-| `customer.email`        | String           | Conditional | Email input                   |
-| `customer.phone_number` | String           | Conditional | Phone-number input            |
+| `customer.email`         | String           | Yes         | Email input                   |
+| `customer.phone_number` | String           | Yes         | Phone-number input            |
 | `store`                 | String           |         Yes | Preferred-store select        |
 | `products`              | Array of strings |         Yes | Selected product controls     |
 | `budget`                | Number           |         Yes | Budget input                  |
 | `purchase_time_horizon` | String           |         Yes | Purchase-time-horizon select  |
-| `customer_comments`     | String (max 500) |          No | Additional-comments text area |
+| `customer_comments`     | String (max 500) |         Yes | Additional-comments text area; empty string is allowed |
 
-At least one customer contact method should be present.
-
-The exact requirement for email and phone number remains an open design decision.
+The current form and API require both email and phone number. The comments control is optional to fill in, but the payload includes `customer_comments`; an empty string is valid.
 
 ## Customer Object
 
@@ -79,7 +77,7 @@ Example:
     "customer": {
         "name": "Example Customer",
         "email": "customer@example.com",
-        "phone_number": "88888888"
+        "phone_number": "+506 8888-7777"
     }
 }
 ```
@@ -100,31 +98,21 @@ Initial example:
 
 ```json
 {
-    "store": "San José"
+    "store": "san-sebastian"
 }
 ```
 
-The frontend should not submit the store's internal database UUID.
+The frontend should not submit the store's internal database ID.
 
-The exact client-facing representation remains flexible.
-
-The initial version may submit a readable store name:
+The current form submits a predefined store code:
 
 ```json
 {
-    "store": "San José"
+    "store": "san-sebastian"
 }
 ```
 
-A future version may submit a stable code:
-
-```json
-{
-    "store": "san-jose"
-}
-```
-
-The frontend should use the `value` provided by the store-options response.
+The frontend should eventually use the `value` provided by a store-options response.
 
 Example response:
 
@@ -132,16 +120,18 @@ Example response:
 {
     "stores": [
         {
-            "value": "San José",
-            "label": "San José"
+            "value": "san-sebastian",
+            "label": "San Sebastián"
         }
     ]
 }
 ```
 
-The `label` is displayed to the customer.
+This response shape is a future design; the current form does not load store options from the API. Its store choices are hard-coded as `la-mora` and `san-sebastian`.
 
-The `value` is stored in the form control and included in the JSON payload.
+When API option retrieval is implemented, the `label` will be displayed to the customer.
+
+The `value` will be stored in the form control and included in the JSON payload.
 
 This allows the API-facing value to change later without changing the text shown to the customer.
 
@@ -153,7 +143,7 @@ Example:
 
 ```json
 {
-    "products": ["Bed", "Nightstand"]
+    "products": ["bed", "table"]
 }
 ```
 
@@ -163,23 +153,23 @@ Example with one product:
 
 ```json
 {
-    "products": ["Bed"]
+    "products": ["bed"]
 }
 ```
 
-The frontend should not submit internal product UUIDs.
+The frontend should not submit internal product-category database IDs.
 
-The initial implementation may submit product names.
+The current form submits product-category codes (`bed`, `table`, and `sofa`).
 
-A future implementation may submit stable codes:
+The current implementation submits stable codes:
 
 ```json
 {
-    "products": ["bed", "nightstand"]
+    "products": ["bed", "table"]
 }
 ```
 
-The values should come from the product-options response rather than being manually inferred from the visible text.
+The values should eventually come from the product-options response rather than being manually inferred from the visible text; the current form has hard-coded options.
 
 Example:
 
@@ -187,9 +177,9 @@ Example:
 {
     "products": [
         {
-            "value": "Bed",
-            "label": "Bed",
-            "description": "Beds and related bedroom furniture"
+            "value": "bed",
+            "label": "Cama",
+            "description": "Categoría cama"
         }
     ]
 }
@@ -219,7 +209,7 @@ Avoid:
 
 The frontend may display formatting to the customer, but it should remove symbols and separators before constructing the payload.
 
-The currency represented by the number remains an open design decision.
+The form currently labels the amount in Costa Rican colones, but the JSON request and database store a unitless number.
 
 The frontend and backend must agree on one currency and unit.
 
@@ -271,17 +261,9 @@ Example:
 }
 ```
 
-Before constructing the payload, the frontend should trim leading and trailing whitespace.
+The current frontend sends comments as entered without trimming leading or trailing whitespace.
 
-When no comments are entered, the initial implementation may either:
-
-- Send an empty string
-- Send `null`
-- Omit the property
-
-The preferred behavior remains an implementation decision.
-
-A consistent approach must be selected and supported by the backend schema.
+When no comments are entered, the frontend sends an empty string. The backend requires the field to be present and accepts an empty string.
 
 ## Fields Managed by the Backend
 
@@ -289,10 +271,10 @@ The frontend should not send fields that are created or controlled by the backen
 
 These include:
 
-- Lead UUID
-- Customer UUID
-- Store UUID
-- Product UUIDs
+- Lead database ID
+- Customer database ID
+- Store database ID
+- Product-category database IDs
 - Lead status
 - Lead priority
 - Assigned sales representative
@@ -317,14 +299,14 @@ The backend is responsible for creating and managing these values.
 
 | HTML Field Name         | Payload Property        |
 | ----------------------- | ----------------------- |
-| `customer_name`         | `customer.name`         |
-| `customer_email`        | `customer.email`        |
-| `customer_phone`        | `customer.phone_number` |
+| `customerName`          | `customer.name`         |
+| `customerEmail`         | `customer.email`        |
+| `customerPhone`         | `customer.phone_number` |
 | `store`                 | `store`                 |
 | `products`              | `products`              |
 | `budget`                | `budget`                |
-| `purchase_time_horizon` | `purchase_time_horizon` |
-| `customer_comments`     | `customer_comments`     |
+| `purchaseTimeHorizon`   | `purchase_time_horizon` |
+| `customerComments`      | `customer_comments`     |
 
 The HTML field names do not need to match the JSON structure exactly.
 
@@ -350,9 +332,7 @@ const payload = {
     budget: Number(document.querySelector("#budget").value),
     purchase_time_horizon: document.querySelector("#purchase-time-horizon")
         .value,
-    customer_comments: document
-        .querySelector("#customer-comments")
-        .value.trim(),
+    customer_comments: document.querySelector("#customer-comments").value,
 };
 
 console.log(payload);
@@ -394,7 +374,7 @@ const response = await fetch("/leads", {
 });
 ```
 
-During local development, the frontend and backend may run on different addresses or ports.
+The current frontend sends to `http://127.0.0.1:5001/leads`, while the backend enables CORS for `/leads` from any origin. The request URL is currently hard-coded and should be configured appropriately for other environments.
 
 For example:
 
@@ -407,47 +387,24 @@ In that case, the request URL and cross-origin configuration will need to be han
 
 The current Flask route is `/leads`. Moving it to the target `/api/v1/leads` prefix requires a coordinated backend and frontend change.
 
-## Client-Side Validation Before Submission
+## Current Client-Side Validation
 
-Before creating or sending the payload, JavaScript should confirm:
+Before sending the payload, JavaScript currently:
 
-- Customer name is not empty
-- At least one contact method is present
-- Email format is acceptable when provided
-- Phone-number format is acceptable when provided
-- Store value is present
-- At least one product is selected
-- Budget is a valid number
-- Budget is within the allowed range
-- Purchase time horizon is present
-- Customer comments do not exceed the allowed length
+- Trims and validates the customer name and email.
+- Normalizes the phone number to the Costa Rican display format.
+- Requires a finite, positive numeric budget.
+- Reads required store and purchase-time-horizon form controls.
+- Sends all selected products, including an empty array if none are selected.
+- Sends customer comments as entered; the HTML and API limit them to 500 characters.
 
-The frontend should not send the request when known validation errors are present.
+The API requires customer name, email, phone number, store, products array, budget, purchase horizon, and comments. It restricts store and purchase-horizon values, requires a numeric budget, and limits comments to a string of at most 500 characters. The customer service checks email and phone formats while processing the customer, but these failures are not yet returned as structured validation responses. The API does not require a non-empty products array or enforce a positive budget.
 
-Client-side validation does not replace backend validation.
+Client-side validation does not replace backend validation because requests may be modified or sent without using the official form.
 
-## Backend Validation Responsibility
+## Planned Successful Response
 
-The REST API remains responsible for validating the complete request.
-
-The backend should verify:
-
-- Required properties are present
-- Property types are correct
-- Unknown properties are rejected or handled consistently
-- Email and phone formats are valid
-- At least one contact method is present
-- Store value corresponds to an active store
-- Product values correspond to active products
-- Budget is valid
-- Purchase time horizon is supported
-- Comment length is valid
-
-The frontend cannot be considered trusted because requests may be modified or sent without using the official form.
-
-## Successful Response Handling
-
-A successful lead submission is expected to return:
+The current endpoint returns `200 OK` with `{"message": "Payload received"}` after creating or reusing the customer. It does not yet create a lead. A future response for a persisted lead could include:
 
 ```json
 {
@@ -467,11 +424,11 @@ The frontend may use the response to:
 - Clear the form
 - Prevent accidental duplicate submissions
 
-The frontend does not need to display the generated lead UUID to the customer.
+The frontend does not need to display the generated lead ID to the customer.
 
-## Error Response Handling
+## Planned Field-Specific Error Handling
 
-A validation error may return:
+The current frontend displays a generic error message. A future API contract could provide field-specific details, for example:
 
 ```json
 {
@@ -504,7 +461,7 @@ if (!response.ok) {
 
 The final error-handling implementation may become more detailed as the API contract is implemented.
 
-## Example Minimal Payload
+## Example Minimal Valid Payload
 
 A minimal valid payload may look like:
 
@@ -512,40 +469,27 @@ A minimal valid payload may look like:
 {
     "customer": {
         "name": "Example Customer",
-        "email": "",
-        "phone_number": "88888888"
+        "email": "customer@example.com",
+        "phone_number": "+506 8888-7777"
     },
-    "store": "Heredia",
-    "products": ["Sofa"],
+    "store": "san-sebastian",
+    "products": ["sofa"],
     "budget": 350000,
     "purchase_time_horizon": "three_months",
     "customer_comments": ""
 }
 ```
 
-This example assumes:
-
-- A phone number is sufficient as the contact method
-- Empty optional strings are accepted
-- Store and product names are used as client-facing values
-
-These assumptions must be confirmed during implementation.
+Both customer contact fields are required by the current API. The comments field is present as an empty string because the customer did not enter a comment.
 
 ## Open Design Decisions
 
 The following decisions remain open:
 
-- Whether both email and phone number are required
-- Whether absent optional fields are empty strings, `null`, or omitted
-- Budget currency and unit
+- Whether both email and phone number should remain required
+- Whether the unitless budget API/database value should include explicit currency metadata (the form currently labels it as Costa Rican colones)
 - Minimum and maximum budget values
-- Final purchase time-horizon values
-- Whether store values use names or stable codes
-- Whether product values use names or stable codes
 - Maximum number of products per submission
-- Maximum comment length
-- Cross-origin request configuration during local development
-- Whether the frontend and backend share the same deployment origin
 - Exact handling of field-specific API errors
 
 These decisions should be resolved when required by implementation.
