@@ -119,7 +119,7 @@
                         id="budget"
                         name="budget"
                         min="1"
-                        step="1"
+                        step="any"
                         required
                     />
                 </div>
@@ -135,20 +135,19 @@
                         required
                     >
                         <option value="">Seleccione una opción</option>
-                        <option value="immediately">Lo antes posible</option>
-                        <option value="within_one_month">
+                        <option value="one_month">
                             Dentro de un mes
                         </option>
-                        <option value="within_three_months">
+                        <option value="three_months">
                             Dentro de tres meses
                         </option>
-                        <option value="within_six_months">
+                        <option value="six_months">
                             Dentro de seis meses
                         </option>
-                        <option value="more_than_six_months">
+                        <option value="more_six_months">
                             Más de seis meses
                         </option>
-                        <option value="undecided">No he decidido</option>
+                        <option value="not_decided">No he decidido</option>
                     </select>
                 </div>
 
@@ -182,6 +181,7 @@
                         id="customer-comments"
                         name="customerComments"
                         rows="5"
+                        maxlength="500"
                         placeholder="Agregue detalles adicionales en este espacio."
                     ></textarea>
                 </div>
