@@ -64,9 +64,9 @@ Design implication:
 | `customer_id`                | Reference to the customer who submitted the lead                                        |
 | `store_id`                   | Reference to the store selected by the customer                                         |
 | `sales_representative_id`    | Reference to the assigned sales representative; nullable until assignment               |
-| `budget`                     | Customer's estimated purchase budget                                                    |
-| `purchase_time_horizon`      | Estimated timeframe in which the customer intends to make the purchase                  |
-| `customer_comments`          | Additional comments, questions, or requests submitted by the customer                   |
+| `budget`                     | Customer's estimated purchase budget, stored as a floating-point value                  |
+| `purchase_time_horizon`      | One of `one_month`, `three_months`, `six_months`, `more_six_months`, or `not_decided`  |
+| `customer_comments`          | Additional comments, questions, or requests submitted by the customer (max 500 characters) |
 | `sales_representative_notes` | Internal notes added by the assigned sales representative                               |
 | `status`                     | Current lead status, such as `new`, `assigned`, `in_progress`, `closed`, or `cancelled` |
 | `priority`                   | Lead priority or classification                                                         |

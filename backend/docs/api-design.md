@@ -135,7 +135,7 @@ The frontend sends customer information and lead information together in one req
     "store": "San José",
     "products": ["Bed", "Nightstand"],
     "budget": 500000,
-    "purchase_time_horizon": "within_one_month",
+    "purchase_time_horizon": "one_month",
     "customer_comments": "I am looking for a queen-size bed."
 }
 ```
@@ -151,8 +151,8 @@ The frontend sends customer information and lead information together in one req
 | `store`                 | String           | Yes         | Client-facing name or code representing the selected store      |
 | `products`              | Array of strings | Yes         | Client-facing names or codes representing the selected products |
 | `budget`                | Number           | Yes         | Customer's estimated purchase budget                            |
-| `purchase_time_horizon` | String           | Yes         | Estimated timeframe for the purchase                            |
-| `customer_comments`     | String           | No          | Additional questions, requests, or information                  |
+| `purchase_time_horizon` | String           | Yes         | One of `one_month`, `three_months`, `six_months`, `more_six_months`, or `not_decided` |
+| `customer_comments`     | String (max 500) | No          | Additional questions, requests, or information                  |
 
 At least one contact method should be required. The exact rule for requiring email, phone number, or both remains an implementation decision.
 
@@ -319,9 +319,9 @@ Only active products should be returned.
 - `customer.name`, `customer.email`, and `customer.phone_number`
 - `store`, restricted to `la-mora` or `san-sebastian`
 - `products` as a list of strings
-- `budget` as an integer
+- `budget` as a floating-point number
 - `purchase_time_horizon`, restricted to the configured choices
-- `customer_comments` as a string
+- `customer_comments` as a string of at most 500 characters
 
 Phone numbers are normalized by the customer service to the `+506 1234-5678` format. Customer identity is currently determined by the normalized phone number; email is stored but is not unique.
 
