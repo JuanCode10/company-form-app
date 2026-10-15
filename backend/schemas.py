@@ -1,12 +1,6 @@
 from marshmallow import Schema, fields, validate
 
-PURCHASE_TIME_HORIZON_CHOICES = [
-    "immediately",
-    "within_one_month",
-    "within_three_months",
-    "within_six_months",
-    "more_than_six_months",
-]
+from constants.lead_choices import PURCHASE_TIME_HORIZON_CHOICES
 
 STORE_CHOICES = [
     "la-mora",
@@ -27,9 +21,12 @@ class FormPayloadSchema(Schema):
     customer = fields.Nested(PlainCustomerSchema(), required=True)
     store = fields.Str(required=True, validate=validate.OneOf(STORE_CHOICES))
     products = fields.List(fields.Str(), required=True)
-    budget = fields.Int(required=True)
+    budget = fields.Float(required=True)
     purchase_time_horizon = fields.Str(
         required=True,
         validate=validate.OneOf(PURCHASE_TIME_HORIZON_CHOICES),
     )
-    customer_comments = fields.Str(required=True)
+    customer_comments = fields.Str(
+        required=True,
+        validate=validate.Length(max=500),
+    )
