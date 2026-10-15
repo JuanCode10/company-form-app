@@ -45,7 +45,7 @@ The initial payload should follow these principles:
     "store": "San José",
     "products": ["Bed", "Nightstand"],
     "budget": 500000,
-    "purchase_time_horizon": "within_one_month",
+    "purchase_time_horizon": "one_month",
     "customer_comments": "I am looking for a queen-size bed."
 }
 ```
@@ -62,7 +62,7 @@ The initial payload should follow these principles:
 | `products`              | Array of strings |         Yes | Selected product controls     |
 | `budget`                | Number           |         Yes | Budget input                  |
 | `purchase_time_horizon` | String           |         Yes | Purchase-time-horizon select  |
-| `customer_comments`     | String           |          No | Additional-comments text area |
+| `customer_comments`     | String (max 500) |          No | Additional-comments text area |
 
 At least one customer contact method should be present.
 
@@ -231,19 +231,18 @@ Example:
 
 ```json
 {
-    "purchase_time_horizon": "within_one_month"
+    "purchase_time_horizon": "one_month"
 }
 ```
 
 Possible initial values include:
 
 ```text
-immediately
-within_one_month
-within_three_months
-within_six_months
-more_than_six_months
-undecided
+one_month
+three_months
+six_months
+more_six_months
+not_decided
 ```
 
 The frontend may display a more natural label:
@@ -255,14 +254,14 @@ Within one month
 while submitting:
 
 ```text
-within_one_month
+one_month
 ```
 
 The backend should reject values outside the supported list.
 
 ## Customer Comments
 
-The `customer_comments` field contains optional free-form information.
+The `customer_comments` field contains optional free-form information, limited to 500 characters.
 
 Example:
 
@@ -519,7 +518,7 @@ A minimal valid payload may look like:
     "store": "Heredia",
     "products": ["Sofa"],
     "budget": 350000,
-    "purchase_time_horizon": "within_three_months",
+    "purchase_time_horizon": "three_months",
     "customer_comments": ""
 }
 ```
