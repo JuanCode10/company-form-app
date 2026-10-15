@@ -15,3 +15,10 @@ class LeadModel(db.Model):
     customer = db.relationship("CustomerModel", back_populates="leads")
     store = db.relationship("StoreModel", back_populates="leads")
     sales_rep = db.relationship("SalesRepModel", back_populates="leads")
+
+    # Many-to-many relationship
+    product_categories = db.relationship(
+        "ProductCategoryModel",
+        back_populates="leads",
+        secondary="leads_product_categories"
+    )
